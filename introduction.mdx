@@ -33,17 +33,17 @@ description: Learn how to predict house prices using machine learning regression
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-white/80 dark:text-gray-400">Test R² Score</span>
-              <span className="text-white font-semibold dark:text-gray-100">0.710</span>
+              <span className="text-white font-semibold dark:text-gray-100">0.850</span>
             </div>
             <div className="w-full bg-white/20 dark:bg-[#0f1117] rounded-full h-2">
-              <div className="bg-white dark:bg-[#60A5FA] h-2 rounded-full" style={{width: '71%'}}></div>
+              <div className="bg-white dark:bg-[#60A5FA] h-2 rounded-full" style={{width: '85%'}}></div>
             </div>
             <div className="flex items-center justify-between text-sm mt-4">
               <span className="text-white/80 dark:text-gray-400">Test RMSE</span>
-              <span className="text-white font-semibold dark:text-gray-100">4.650</span>
+              <span className="text-white font-semibold dark:text-gray-100">3.349</span>
             </div>
             <div className="pt-4 border-t border-white/10 dark:border-[#27272a]">
-              <p className="text-xs text-white/70 dark:text-gray-400">Best Model: Linear Regression (Multivariate)</p>
+              <p className="text-xs text-white/70 dark:text-gray-400">Best Model: Decision Tree Regression</p>
             </div>
           </div>
         </div>
@@ -117,9 +117,11 @@ description: Learn how to predict house prices using machine learning regression
                                     MODEL COMPARISON OVERVIEW
       ═══════════════════════════════════════════════════════════════════════════════
          Model Name                              Train R²  Test R²  CV R² Mean  Test RMSE
-      0  Linear Regression (Multivariate)        0.7430    0.7100   0.6880      4.6500
-      1  Linear Regression (Feature Selection)   0.6870    0.6510   0.6510      5.0990
-      2  Polynomial Regression (degree=3)        0.5490    0.5830   0.4910      5.5770
+      0  Decision Tree Regression                0.9277    0.8495   0.7239      3.3487
+      1  Neural Network Regression               0.8456    0.8058   0.7853      3.8044
+      2  SGD (adaptive)                          0.7421    0.7102   0.6901      4.6466
+      3  Linear Regression (Multivariate)        0.7432    0.7099   0.6880      4.6496
+      4  SGD (constant)                          0.7347    0.6940   0.6657      4.7747
       ```
       </Accordion>
     </Step>
@@ -184,7 +186,7 @@ description: Learn how to predict house prices using machine learning regression
           Linear Regression
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Univariate and multivariate regression with feature selection. Best overall performance with R² = 0.710.
+          Univariate and multivariate regression with feature selection. Solid baseline performance with R² = 0.710.
         </p>
         <div className="flex items-center text-sm text-[#3B82F6] dark:text-[#60A5FA] group-hover:text-[#1E40AF] dark:group-hover:text-[#3B82F6]">
           Learn more
@@ -264,7 +266,7 @@ description: Learn how to predict house prices using machine learning regression
         Ready to start predicting?
       </h2>
       <p className="text-lg text-white/90 mb-6">
-        Follow the quickstart guide to train your first model and achieve 0.710 R² score in minutes.
+        Follow the quickstart guide to train multiple models and achieve up to 0.850 R² score with Decision Tree Regression.
       </p>
       <a
         href="/quickstart"

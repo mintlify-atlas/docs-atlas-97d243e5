@@ -79,7 +79,7 @@ This project uses **5 key metrics** to evaluate regression model performance. Ea
   - When comparing models on the same dataset
   - Standard metric for regression competitions
   
-  **Best Model in Project**: Linear Regression (Multivariate) with **Test RMSE = 4.650** ($4,650 average error)
+  **Best Model in Project**: Decision Tree Regression with **Test RMSE = 3.349** ($3,349 average error)
 </Accordion>
 
 ### 3. Mean Absolute Error (MAE)
@@ -153,7 +153,7 @@ This project uses **5 key metrics** to evaluate regression model performance. Ea
   | **0.3 - 0.5** | Weak fit | 30-50% variance explained |
   | **&lt; 0.3** | Poor fit | Less than 30% variance explained |
   
-  **Best Model in Project**: Linear Regression (Multivariate) with **Test R² = 0.710** (Good fit)
+  **Best Model in Project**: Decision Tree Regression with **Test R² = 0.850** (Very strong fit)
 </Accordion>
 
 <Accordion title="Why R² is the Primary Metric">
@@ -320,18 +320,22 @@ The evaluation function includes automatic detection (from `eval_model_src.py:44
 
 ## Model Performance Comparison
 
-From the project README (actual results):
+From actual model comparison results (all 9 models trained):
 
 | Model | Train R² | Test R² | Test RMSE | CV R² (mean±std) | Status |
 |-------|----------|---------|-----------|------------------|--------|
-| **Linear (Multivariate)** | 0.743 | **0.710** | **4.650** | 0.688 ± 0.092 | ✅ Best Model |
-| **Linear (Feature Selection)** | 0.687 | 0.651 | 5.099 | 0.651 ± 0.090 | ✅ Good Fit |
+| **Decision Tree** | 0.928 | **0.850** | **3.349** | 0.724 ± 0.114 | 🏆 Best Model |
+| **Neural Network (MLP)** | 0.846 | 0.806 | 3.804 | 0.785 ± 0.067 | ✅ Excellent |
+| **SGD (adaptive)** | 0.742 | 0.710 | 4.647 | 0.690 ± 0.095 | ✅ Good Fit |
+| **Linear (Multivariate)** | 0.743 | 0.710 | 4.650 | 0.688 ± 0.092 | ✅ Good Fit |
+| **SGD (constant)** | 0.735 | 0.694 | 4.775 | 0.666 ± 0.101 | ✅ Good Fit |
+| **Linear (Feature Selection)** | 0.687 | 0.651 | 5.099 | 0.651 ± 0.090 | ✅ Moderate |
 | **Polynomial (degree=3)** | 0.549 | 0.583 | 5.577 | 0.491 ± 0.205 | ⚠️ Unstable |
 | **Polynomial (degree=2)** | 0.536 | 0.567 | 5.679 | 0.483 ± 0.224 | ⚠️ Unstable |
 | **Linear (Univariate)** | 0.489 | 0.458 | 6.355 | 0.452 ± 0.177 | ⚠️ Underfitting |
 
 <Note>
-  **Winner**: Linear Regression with all 13 features achieves the best balance of accuracy, stability, and generalization.
+  **Winner**: Decision Tree Regression achieves the highest Test R² (0.850) and lowest RMSE (3.349), outperforming all other models including Neural Networks and Linear Regression.
 </Note>
 
 ## Metrics Output Example
