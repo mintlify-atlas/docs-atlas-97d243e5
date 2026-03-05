@@ -1,0 +1,82 @@
+{
+  "projectType": "ai-ml",
+  "projectName": "House Price Prediction",
+  "projectDescription": "A machine learning project that predicts house prices using various regression techniques on the Boston Housing dataset",
+  "theme": "palm",
+  "primaryColor": "#3B82F6",
+  "lightColor": "#60A5FA",
+  "darkColor": "#1E40AF",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/dataset",
+              "concepts/features",
+              "concepts/evaluation-metrics"
+            ]
+          },
+          {
+            "group": "Workflows",
+            "pages": [
+              "workflows/data-analysis",
+              "workflows/model-training",
+              "workflows/model-comparison"
+            ]
+          },
+          {
+            "group": "Model Guide",
+            "pages": [
+              "models/linear-regression",
+              "models/polynomial-regression",
+              "models/gradient-descent",
+              "models/advanced-models"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Evaluation",
+            "pages": [
+              "api/evaluate-model",
+              "api/print-metrics"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "api/compare-models"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Multiple regression algorithms (Linear, Polynomial, SGD, Decision Tree, Neural Network)",
+    "Comprehensive model evaluation with MSE, RMSE, MAE, and R² metrics",
+    "5-fold cross-validation for robust performance assessment",
+    "Feature selection based on correlation analysis",
+    "Automated model comparison and ranking",
+    "Overfitting and underfitting detection"
+  ],
+  "publicApiSurface": [
+    "evaluate_model(model, X_train, X_test, y_train, y_test, model_name)",
+    "print_metrics(metrics)",
+    "compare_models.main()"
+  ]
+}
