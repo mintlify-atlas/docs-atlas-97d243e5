@@ -1,0 +1,125 @@
+---
+title: 'Boston Housing Dataset'
+description: 'Overview of the dataset, its source, features, and target variable'
+icon: 'database'
+---
+
+## Overview
+
+This project uses the **Boston Housing Dataset** from Kaggle to predict median home values based on various property and neighborhood characteristics.
+
+<Info>
+  **Source**: [Kaggle - Boston Housing Dataset](https://www.kaggle.com/datasets/arunjangir245/boston-housing-dataset)
+</Info>
+
+## Dataset Statistics
+
+- **Samples**: 506 housing records
+- **Features**: 13 independent variables
+- **Target**: medv (Median home value in $1000s)
+- **Missing Values**: 5 missing values in `rm` feature (0.99%)
+
+## Real-Life Applications
+
+House price prediction models are actively used by:
+
+- **Zillow** - Automated home valuation (Zestimate)
+- **MagicBricks** - Property price estimation in India
+- **Redfin** - Real estate market analysis
+- **Real estate agencies** - Property appraisal and investment analysis
+
+## Target Variable
+
+<CardGroup cols={2}>
+  <Card title="medv" icon="dollar-sign">
+    Median value of owner-occupied homes in $1000s
+    
+    - **Mean**: $22,533
+    - **Range**: $5,000 - $50,000
+    - **Median**: $21,200
+  </Card>
+  
+  <Card title="Distribution" icon="chart-line">
+    The target shows moderate variance with some outliers at the upper end (40 outliers, 7.91%)
+  </Card>
+</CardGroup>
+
+## Dataset Features
+
+The dataset contains 13 features describing various aspects of housing and neighborhood characteristics:
+
+| Feature | Description | Type |
+|---------|-------------|------|
+| **crim** | Per capita crime rate by town | Continuous |
+| **zn** | Proportion of residential land zoned for lots over 25,000 sq.ft | Continuous |
+| **indus** | Proportion of non-retail business acres per town | Continuous |
+| **chas** | Charles River dummy variable (1 if tract bounds river; 0 otherwise) | Binary |
+| **nox** | Nitric oxides concentration (parts per 10 million) | Continuous |
+| **rm** | Average number of rooms per dwelling | Continuous |
+| **age** | Proportion of owner-occupied units built prior to 1940 | Continuous |
+| **dis** | Weighted distances to five Boston employment centers | Continuous |
+| **rad** | Index of accessibility to radial highways | Discrete |
+| **tax** | Full-value property-tax rate per $10,000 | Continuous |
+| **ptratio** | Pupil-teacher ratio by town | Continuous |
+| **b** | 1000(Bk - 0.63)^2 where Bk is proportion of Black residents | Continuous |
+| **lstat** | Percentage of lower status of the population | Continuous |
+
+<Note>
+  The `b` feature captures historical racial demographics in Boston housing markets and reflects socioeconomic patterns from that era.
+</Note>
+
+## Data Quality
+
+<Accordion title="Missing Values Analysis">
+  - **rm** (Average rooms): 5 missing values (0.99%)
+  - **Strategy**: Missing values can be imputed using median or mean
+  - **Impact**: Minimal due to low percentage
+</Accordion>
+
+<Accordion title="Outliers Detected">
+  Using IQR (Interquartile Range) method:
+  
+  - **crim**: 66 outliers (13.04%) - High crime rate areas
+  - **zn**: 68 outliers (13.44%) - Large residential lots
+  - **b**: 77 outliers (15.22%) - Demographic distribution
+  - **medv**: 40 outliers (7.91%) - High-value properties
+  - **rm**: 30 outliers (5.93%) - Unusually large homes
+</Accordion>
+
+<Accordion title="Data Types">
+  - **Float64**: 11 features (crim, zn, indus, nox, rm, age, dis, ptratio, b, lstat, medv)
+  - **Int64**: 3 features (chas, rad, tax)
+  - All features are numerical, no categorical encoding required
+</Accordion>
+
+## Key Statistics
+
+```python
+# Example: Loading the dataset
+import pandas as pd
+import kagglehub
+
+# Download dataset
+path = kagglehub.dataset_download("arunjangir245/boston-housing-dataset")
+df = pd.read_csv(f"{path}/BostonHousing.csv")
+
+print(f"Dataset shape: {df.shape}")
+print(f"\nTarget statistics:")
+print(df['medv'].describe())
+```
+
+<Note>
+  **Historical Context**: This dataset represents Boston housing data from the 1970s and contains features that reflect the socioeconomic patterns of that era.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Feature Analysis" icon="magnifying-glass-chart" href="/concepts/features">
+    Explore feature correlations and their impact on house prices
+  </Card>
+  
+  <Card title="Evaluation Metrics" icon="chart-bar" href="/concepts/evaluation-metrics">
+    Learn about the metrics used to evaluate model performance
+  </Card>
+</CardGroup>

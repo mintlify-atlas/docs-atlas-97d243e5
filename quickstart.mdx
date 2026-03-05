@@ -1,80 +1,272 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start
+description: Get up and running with the House Price Prediction project in minutes
 ---
 
-## Get started in three steps
+Get started with house price prediction using machine learning on the Boston Housing dataset. This guide will help you run your first analysis and train your first models in under 5 minutes.
 
-Get your documentation site running locally and make your first customization.
+## Prerequisites
 
-### Step 1: Set up your local environment
+Before you begin, ensure you have:
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+- Python 3.12 or higher installed
+- Basic familiarity with Jupyter notebooks
+- Internet connection (for downloading the dataset)
+
+## Installation
+
+<Steps>
+  <Step title="Clone or download the project">
+    Navigate to your project directory:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    ```bash
+    cd ~/workspace/source
+    ```
+  </Step>
 
-### Step 2: Deploy your changes
+  <Step title="Install dependencies">
+    <CodeGroup>
+      ```bash UV (Recommended)
+      uv sync
+      ```
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+      ```bash pip
+      pip install -r requirements.txt
+      ```
+    </CodeGroup>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    <Tip>
+    UV is faster and more reliable for dependency management. It automatically creates and manages virtual environments.
+    </Tip>
+  </Step>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+  <Step title="Verify installation">
+    Check that all packages are installed correctly:
 
-### Step 3: Go live
+    ```bash
+    python -c "import pandas, numpy, sklearn, kagglehub; print('All dependencies installed!')"
+    ```
+  </Step>
+</Steps>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+## Running Your First Analysis
 
-## Next steps
+### 1. Data Exploration
 
-Now that you have your docs running, explore these key features:
+Start Jupyter and open the analysis notebook:
 
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+```bash
+jupyter notebook notebooks/analyze.ipynb
+```
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+The dataset (Boston Housing) will be automatically downloaded from Kaggle on first run via `kagglehub`. No manual download needed!
 </Note>
+
+**What you'll discover:**
+
+<AccordionGroup>
+  <Accordion title="Dataset Overview">
+    - **506 samples** with 13 features and 1 target variable
+    - **Target**: `medv` (Median home value in $1000s)
+    - **5 missing values** in the `rm` column (automatically handled)
+  </Accordion>
+
+  <Accordion title="Key Features">
+    - `rm`: Average number of rooms (strongest positive correlation: 0.696)
+    - `lstat`: % lower status population (strongest negative correlation: -0.738)
+    - `ptratio`: Pupil-teacher ratio (-0.508 correlation)
+    - `nox`: Nitric oxides concentration (-0.427 correlation)
+  </Accordion>
+
+  <Accordion title="Data Quality">
+    - Only 5 missing values (0.98% in `rm` column)
+    - Outliers detected in several columns (handled during training)
+    - No categorical variables - all numeric features
+  </Accordion>
+</AccordionGroup>
+
+**Expected output from analyze.ipynb:**
+
+```bash
+Path to dataset files: ~/.cache/kagglehub/datasets/arunjangir245/boston-housing-dataset/versions/2
+
+Dataset shape: (506, 14)
+Number of rows: 506
+Number of columns: 14
+
+Missing values after cleaning: 0
+```
+
+### 2. Model Training
+
+Open the training notebook to build and evaluate multiple regression models:
+
+```bash
+jupyter notebook notebooks/train.ipynb
+```
+
+The training pipeline runs **9 different models**:
+
+<Steps>
+  <Step title="Linear Regression Models">
+    - **Univariate**: Using only `rm` (rooms) feature
+    - **Multivariate**: Using all 13 features
+    - **Feature Selection**: Top 6 correlated features
+  </Step>
+
+  <Step title="Polynomial Regression">
+    - Degree 2 polynomial features
+    - Degree 3 polynomial features
+  </Step>
+
+  <Step title="Advanced Models">
+    - **SGD Regressor**: Gradient descent with constant and adaptive learning rates
+    - **Decision Tree**: With max depth of 5
+    - **Neural Network**: MLP with (100, 50) hidden layers
+  </Step>
+
+  <Step title="Evaluation & Comparison">
+    All models evaluated with:
+    - R² (coefficient of determination)
+    - RMSE (root mean squared error)
+    - MAE (mean absolute error)
+    - 5-fold cross-validation
+  </Step>
+</Steps>
+
+**Expected training output:**
+
+```bash
+Setup complete!
+Path to dataset files: ~/.cache/kagglehub/datasets/...
+
+Missing values after cleaning: 0
+Training set: 354 samples
+Test set: 152 samples
+Data saved to results/
+
+==================================================
+Model: Linear Regression (Multivariate)
+==================================================
+Train MSE: 22.5704 | Test MSE: 21.6188
+Train RMSE: 4.7508 | Test RMSE: 4.6496
+Train MAE: 3.3590 | Test MAE: 3.1761
+Train R²: 0.7432 | Test R²: 0.7099
+CV R² (mean±std): 0.6880 ± 0.0923
+✅ Good fit
+
+✅ Model and predictions saved!
+```
+
+### 3. Comparing Models
+
+After training completes, the notebook automatically generates a comparison table:
+
+```bash
+Model Performance Ranking (by Test R²):
+                           model_name  train_r2  test_r2  test_rmse  cv_r2_mean
+             Decision Tree Regression  0.9277   0.8495   3.3487     0.7239
+            Neural Network Regression  0.8456   0.8058   3.8044     0.7853
+     Linear Regression (Multivariate)  0.7432   0.7100   4.6496     0.6880
+                       SGD (adaptive)  0.7421   0.7102   4.6466     0.6901
+     Polynomial Regression (degree=3)  0.5491   0.5825   5.5773     0.4908
+
+🏆 Best Model: Decision Tree Regression
+   Test R²: 0.8495
+```
+
+<Warning>
+While Decision Tree shows the highest test R², it may be overfitting (train R² = 0.93 vs test R² = 0.85). Linear Regression (Multivariate) offers better generalization.
+</Warning>
+
+## Understanding the Results
+
+All trained models and outputs are saved in the `results/` directory:
+
+```bash
+results/
+├── *.joblib                # Trained models (loadable with joblib)
+├── *.csv                   # Train/test splits
+├── *.json                  # Evaluation metrics
+├── *.npy                   # Model predictions
+└── model_comparison.csv    # Full comparison table
+```
+
+### Load and Use a Trained Model
+
+```python
+import joblib
+import numpy as np
+
+# Load the best model
+model = joblib.load('results/linear_multivariate.joblib')
+
+# Make predictions on new data
+sample_house = np.array([[0.00632, 18.0, 2.31, 0, 0.538, 
+                          6.575, 65.2, 4.09, 1, 296, 
+                          15.3, 396.90, 4.98]])
+predicted_price = model.predict(sample_house)
+print(f"Predicted price: ${predicted_price[0] * 1000:.2f}")
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation Guide" icon="download" href="/installation">
+    Detailed setup instructions and troubleshooting
+  </Card>
+  
+  <Card title="Understanding Models" icon="brain" href="/models/overview">
+    Learn how each algorithm works
+  </Card>
+  
+  <Card title="Feature Engineering" icon="wand-magic-sparkles" href="/concepts/feature-selection">
+    Improve model performance with better features
+  </Card>
+  
+  <Card title="Model Evaluation" icon="chart-line" href="/concepts/metrics">
+    Understand R², RMSE, and cross-validation
+  </Card>
+</CardGroup>
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="Dataset download fails">
+    The project uses `kagglehub` to automatically download the Boston Housing dataset. If the download fails:
+    
+    1. Check your internet connection
+    2. Ensure `kagglehub` is installed: `pip install kagglehub`
+    3. The dataset will be cached in `~/.cache/kagglehub/` after first download
+  </Accordion>
+
+  <Accordion title="Jupyter kernel not found">
+    If Jupyter can't find the Python kernel:
+    
+    ```bash
+    python -m ipykernel install --user --name=.venv
+    ```
+    
+    Then select the `.venv` kernel in Jupyter.
+  </Accordion>
+
+  <Accordion title="Models take too long to train">
+    The Neural Network model can be slow. To speed up training:
+    
+    - Reduce `max_iter` in the MLPRegressor (line 723 in train.ipynb)
+    - Skip the neural network cell if you want quick results
+    - The entire training process should complete in under 2 minutes
+  </Accordion>
+</AccordionGroup>
+
+## What You've Learned
+
+- ✅ Installed project dependencies using UV or pip
+- ✅ Explored the Boston Housing dataset with 506 samples and 13 features
+- ✅ Trained 9 different regression models
+- ✅ Evaluated models using R², RMSE, and cross-validation
+- ✅ Identified the best model (Decision Tree with R² = 0.85)
+- ✅ Saved and loaded trained models for future use
+
+Ready to dive deeper? Check out the [Installation Guide](/installation) for advanced setup options or explore [Linear Regression](/models/linear-regression) to understand the best performing algorithm.

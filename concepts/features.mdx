@@ -1,0 +1,307 @@
+---
+title: 'Feature Analysis'
+description: 'Understanding feature correlations, selection strategies, and their impact on predictions'
+icon: 'sliders'
+---
+
+## Feature Overview
+
+The Boston Housing dataset contains **13 features** that capture different aspects of property characteristics and neighborhood quality. Understanding how these features correlate with house prices is crucial for building effective prediction models.
+
+## Feature Descriptions
+
+<CardGroup cols={2}>
+  <Card title="Property Features" icon="house">
+    - **rm**: Average number of rooms
+    - **age**: Proportion built before 1940
+    - **chas**: Near Charles River
+  </Card>
+  
+  <Card title="Location Features" icon="map-pin">
+    - **crim**: Crime rate per capita
+    - **zn**: Residential land zoning
+    - **dis**: Distance to employment centers
+    - **rad**: Highway accessibility index
+  </Card>
+  
+  <Card title="Environmental Features" icon="leaf">
+    - **nox**: Nitrogen oxide pollution
+    - **indus**: Industrial area proportion
+  </Card>
+  
+  <Card title="Economic Features" icon="dollar-sign">
+    - **tax**: Property tax rate
+    - **ptratio**: Student-teacher ratio
+    - **lstat**: % lower status population
+    - **b**: Demographic index
+  </Card>
+</CardGroup>
+
+## Correlation Analysis
+
+Correlation analysis reveals which features have the strongest relationship with house prices (`medv`).
+
+### Strong Positive Correlations
+
+Features that increase house prices:
+
+<Accordion title="rm (0.696) - Average Number of Rooms" defaultOpen>
+  **Strongest positive correlation with price**
+  
+  - More rooms → Larger homes → Higher value
+  - Indicates space, comfort, and higher socioeconomic status
+  - Used as the single feature in univariate linear regression
+  
+  ```python
+  # Correlation: 0.696
+  # Interpretation: A 1-room increase correlates with ~$9,100 price increase
+  ```
+  
+  **Why it matters**: Size is one of the strongest drivers of housing price in any market.
+</Accordion>
+
+<Accordion title="zn (0.360) - Residential Land Proportion">
+  - Higher proportion of large residential lots (>25,000 sq.ft)
+  - Indicates suburban or affluent areas with more space
+  - Provides privacy, greenery, and lower congestion
+  
+  **Interpretation**: Land size creates a location-based premium
+</Accordion>
+
+<Accordion title="b (0.333) - Demographic Index">
+  - Historically linked to racial and socioeconomic demographics
+  - Reflects structural socioeconomic patterns in Boston
+  - Captures historical housing segregation effects
+  
+  <Note>
+    This feature reflects socioeconomic patterns from the 1970s dataset era rather than physical housing characteristics.
+  </Note>
+</Accordion>
+
+<Accordion title="dis (0.250) - Distance to Employment">
+  - Slight suburban premium effect
+  - Some buyers prefer quieter neighborhoods further from urban core
+  - Balances accessibility with residential quality
+</Accordion>
+
+### Strong Negative Correlations
+
+Features that decrease house prices:
+
+<Accordion title="lstat (-0.738) - % Lower Status Population" defaultOpen>
+  **Strongest negative correlation with price**
+  
+  - Indicates economic disadvantage in the area
+  - Lower purchasing power reduces property demand
+  - Often correlated with crime, school quality, and infrastructure
+  
+  ```python
+  # Correlation: -0.738
+  # Interpretation: Strong predictor - income level dominates valuation
+  ```
+  
+  **Insight**: Income level is the single strongest predictor of house price in this dataset.
+</Accordion>
+
+<Accordion title="ptratio (-0.508) - Pupil-Teacher Ratio">
+  - Higher ratio suggests overcrowded schools
+  - Lower school quality reduces demand from families
+  - School performance heavily influences housing markets
+  
+  **Interpretation**: Education quality drives neighborhood desirability
+</Accordion>
+
+<Accordion title="indus (-0.484) - Industrial Area Proportion">
+  - More industry means noise, pollution, and traffic
+  - Lower aesthetic and residential appeal
+  - Reduces quality of life
+  
+  **Interpretation**: Environmental quality significantly impacts price
+</Accordion>
+
+<Accordion title="tax (-0.469) - Property Tax Rate">
+  - Higher taxes increase cost of ownership
+  - Reduces affordability and buyer demand
+  - Ongoing financial burden
+  
+  **Interpretation**: Ownership cost directly affects valuation
+</Accordion>
+
+<Accordion title="nox (-0.427) - Air Pollution">
+  - Poor air quality (nitrogen oxides) decreases livability
+  - Health concerns reduce neighborhood desirability
+  
+  **Interpretation**: Clean environment carries a price premium
+</Accordion>
+
+<Accordion title="crim (-0.388) - Crime Rate">
+  - Higher crime lowers perceived safety
+  - Reduces demand and increases risk premium
+  
+  **Interpretation**: Safety is a major component of housing value
+</Accordion>
+
+## Correlation Matrix Visualization
+
+```python
+import pandas as pd
+import numpy as np
+
+# Top correlations with target (medv)
+correlations = {
+    'rm': 0.696,        # Positive: More rooms
+    'zn': 0.360,        # Positive: Large lots
+    'b': 0.333,         # Positive: Demographics
+    'dis': 0.250,       # Positive: Distance to work
+    'chas': 0.175,      # Positive: River proximity
+    'age': -0.377,      # Negative: Older homes
+    'rad': -0.382,      # Negative: Highway access
+    'crim': -0.388,     # Negative: Crime
+    'nox': -0.427,      # Negative: Pollution
+    'tax': -0.469,      # Negative: Property tax
+    'indus': -0.484,    # Negative: Industrial area
+    'ptratio': -0.508,  # Negative: School quality
+    'lstat': -0.738     # Negative: Low income %
+}
+```
+
+## Feature Selection Strategy
+
+Different models in this project use different feature selection approaches:
+
+### 1. Univariate Regression
+
+<Info>
+  **Single Feature**: `rm` (average rooms)
+  
+  - Correlation: 0.696
+  - Performance: R² = 0.458 (test)
+  - Use case: Demonstrates simple linear relationship
+</Info>
+
+### 2. Feature Selection (Top 6)
+
+<Info>
+  **Selected Features**: Top 6 features by absolute correlation
+  
+  1. `lstat` (-0.738)
+  2. `rm` (0.696)
+  3. `ptratio` (-0.508)
+  4. `indus` (-0.484)
+  5. `tax` (-0.469)
+  6. `nox` (-0.427)
+  
+  - Performance: R² = 0.651 (test)
+  - Use case: Balance between simplicity and performance
+</Info>
+
+### 3. Multivariate Regression
+
+<Info>
+  **All Features**: All 13 features included
+  
+  - Performance: R² = 0.710 (test) - **Best model**
+  - Use case: Maximum information utilization
+  - Trade-off: Slightly higher complexity
+</Info>
+
+## Feature Importance Insights
+
+### The Big Five Drivers
+
+Housing prices in this dataset are primarily driven by:
+
+1. **Socioeconomic Status** (`lstat`, `b`) - Income and demographics
+2. **Property Size** (`rm`, `zn`) - Space and land
+3. **Education Quality** (`ptratio`) - School performance
+4. **Environmental Quality** (`nox`, `indus`) - Pollution and industry
+5. **Safety & Costs** (`crim`, `tax`) - Crime and taxes
+
+### Core Pricing Formula
+
+```
+House Price ≈ 
+  Space + Income Level + School Quality 
+  + Environmental Quality + Safety 
+  - Cost Burden
+```
+
+<Note>
+  The dataset reflects classic urban economic patterns where **income, safety, and livability dominate valuation**.
+</Note>
+
+## Feature Engineering Opportunities
+
+<CardGroup cols={2}>
+  <Card title="Polynomial Features" icon="wave-square">
+    Create interaction terms (e.g., rm² for non-linear room effect)
+    
+    Used in: Polynomial Regression (degree 2 & 3)
+  </Card>
+  
+  <Card title="Feature Scaling" icon="scale-balanced">
+    Normalize features for gradient descent algorithms
+    
+    Used in: SGDRegressor models
+  </Card>
+  
+  <Card title="Interaction Terms" icon="arrows-cross">
+    Combine features (e.g., rm × lstat for size-income interaction)
+    
+    Potential improvement opportunity
+  </Card>
+  
+  <Card title="Log Transforms" icon="function">
+    Apply log to skewed features like crim, zn
+    
+    Reduces impact of outliers
+  </Card>
+</CardGroup>
+
+## Model-Specific Feature Usage
+
+| Model | Features Used | Reasoning |
+|-------|--------------|----------|
+| **Linear (Univariate)** | rm only | Demonstrate single strongest feature |
+| **Linear (Feature Selection)** | Top 6 by correlation | Balance simplicity and performance |
+| **Linear (Multivariate)** | All 13 features | Maximum information - best performance |
+| **Polynomial Regression** | All 13 + interactions | Capture non-linear relationships |
+| **Gradient Descent** | All 13 (scaled) | Iterative optimization approach |
+
+## Correlation Heatmap Code
+
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load dataset
+df = pd.read_csv('BostonHousing.csv')
+
+# Calculate correlation matrix
+corr_matrix = df.corr()
+
+# Plot heatmap
+plt.figure(figsize=(12, 10))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0)
+plt.title('Boston Housing - Feature Correlation Matrix')
+plt.tight_layout()
+plt.show()
+
+# Show top correlations with target
+target_corr = corr_matrix['medv'].drop('medv').sort_values(ascending=False)
+print("\nTop correlations with medv:")
+print(target_corr)
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Dataset Overview" icon="database" href="/concepts/dataset">
+    Learn about the dataset structure and statistics
+  </Card>
+  
+  <Card title="Evaluation Metrics" icon="chart-bar" href="/concepts/evaluation-metrics">
+    Understand how model performance is measured
+  </Card>
+</CardGroup>

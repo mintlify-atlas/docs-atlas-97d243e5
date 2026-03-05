@@ -1,0 +1,163 @@
+---
+title: "evaluate_model()"
+description: "Evaluate a machine learning model and compute comprehensive performance metrics"
+---
+
+## Function Signature
+
+```python
+def evaluate_model(
+    model: Any,
+    X_train: Any,
+    X_test: Any,
+    y_train: Any,
+    y_test: Any,
+    model_name: str
+) -> Tuple[Dict[str, Any], Any]
+```
+
+## Description
+
+The `evaluate_model()` function evaluates a trained machine learning model by computing multiple performance metrics on both training and test datasets. It also performs 5-fold cross-validation to assess model generalization.
+
+## Parameters
+
+<ParamField path="model" type="Any" required>
+  The trained machine learning model object. Must implement `predict()` method (e.g., scikit-learn models).
+</ParamField>
+
+<ParamField path="X_train" type="Any" required>
+  Training feature dataset. Typically a pandas DataFrame or numpy array containing the input features used to train the model.
+</ParamField>
+
+<ParamField path="X_test" type="Any" required>
+  Test feature dataset. Must have the same structure and feature columns as `X_train`.
+</ParamField>
+
+<ParamField path="y_train" type="Any" required>
+  Training target values. The actual house prices (or other target variable) corresponding to `X_train`.
+</ParamField>
+
+<ParamField path="y_test" type="Any" required>
+  Test target values. The actual house prices corresponding to `X_test`, used to evaluate model performance.
+</ParamField>
+
+<ParamField path="model_name" type="str" required>
+  Human-readable name for the model (e.g., "Linear Regression", "Decision Tree"). Used for identification in the metrics dictionary.
+</ParamField>
+
+## Return Value
+
+<ResponseField name="return" type="Tuple[Dict[str, Any], Any]">
+  Returns a tuple containing:
+  
+  1. **Metrics Dictionary** - Contains all computed performance metrics
+  2. **Test Predictions** - The model's predictions on the test set (`y_test_pred`)
+</ResponseField>
+
+### Metrics Dictionary Structure
+
+<Expandable title="View all metrics in the returned dictionary">
+  <ResponseField name="model_name" type="str">
+    The name of the model as provided in the parameters
+  </ResponseField>
+  
+  <ResponseField name="train_mse" type="float">
+    Mean Squared Error on the training set
+  </ResponseField>
+  
+  <ResponseField name="test_mse" type="float">
+    Mean Squared Error on the test set
+  </ResponseField>
+  
+  <ResponseField name="train_rmse" type="float">
+    Root Mean Squared Error on the training set (square root of MSE)
+  </ResponseField>
+  
+  <ResponseField name="test_rmse" type="float">
+    Root Mean Squared Error on the test set
+  </ResponseField>
+  
+  <ResponseField name="train_mae" type="float">
+    Mean Absolute Error on the training set
+  </ResponseField>
+  
+  <ResponseField name="test_mae" type="float">
+    Mean Absolute Error on the test set
+  </ResponseField>
+  
+  <ResponseField name="train_r2" type="float">
+    R² (coefficient of determination) score on the training set. Values range from -∞ to 1, where 1 indicates perfect prediction.
+  </ResponseField>
+  
+  <ResponseField name="test_r2" type="float">
+    R² score on the test set. Primary metric for model comparison.
+  </ResponseField>
+  
+  <ResponseField name="cv_r2_mean" type="float">
+    Mean R² score from 5-fold cross-validation on the training set
+  </ResponseField>
+  
+  <ResponseField name="cv_r2_std" type="float">
+    Standard deviation of R² scores from 5-fold cross-validation. Lower values indicate more consistent performance.
+  </ResponseField>
+</Expandable>
+
+## Cross-Validation Details
+
+The function performs **5-fold cross-validation** on the training data:
+
+- The training set is split into 5 equal parts (folds)
+- The model is trained on 4 folds and validated on the remaining fold
+- This process repeats 5 times, with each fold serving as the validation set once
+- The mean and standard deviation of R² scores across all folds are computed
+- This provides a robust estimate of model generalization capability
+
+## Usage Example
+
+```python
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+import pandas as pd
+
+# Load and prepare data
+df = pd.read_csv('house_prices.csv')
+X = df[['area', 'bedrooms', 'bathrooms']]
+y = df['price']
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Train model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Evaluate model
+metrics, predictions = evaluate_model(
+    model=model,
+    X_train=X_train,
+    X_test=X_test,
+    y_train=y_train,
+    y_test=y_test,
+    model_name="Linear Regression (Multivariate)"
+)
+
+# Access metrics
+print(f"Test R²: {metrics['test_r2']:.4f}")
+print(f"Test RMSE: {metrics['test_rmse']:.4f}")
+print(f"CV R² Mean: {metrics['cv_r2_mean']:.4f}")
+
+# Use predictions for further analysis
+import matplotlib.pyplot as plt
+plt.scatter(y_test, predictions)
+plt.xlabel('Actual Prices')
+plt.ylabel('Predicted Prices')
+plt.show()
+```
+
+## Related Functions
+
+- [`print_metrics()`](/api/print-metrics) - Display formatted metrics from this function
+- [`compare_models()`](/api/compare-models) - Compare multiple models using saved metrics

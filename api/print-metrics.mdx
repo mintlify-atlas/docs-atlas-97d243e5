@@ -1,0 +1,181 @@
+---
+title: "print_metrics()"
+description: "Display formatted model evaluation metrics with overfitting/underfitting detection"
+---
+
+## Function Signature
+
+```python
+def print_metrics(metrics: Dict[str, Any]) -> None
+```
+
+## Description
+
+The `print_metrics()` function displays model evaluation metrics in a clean, formatted table. It automatically detects potential overfitting or underfitting issues and provides visual indicators.
+
+## Parameters
+
+<ParamField path="metrics" type="Dict[str, Any]" required>
+  A dictionary containing model evaluation metrics, typically returned by the `evaluate_model()` function.
+  
+  **Required keys:**
+  - `model_name` (str): Name of the model
+  - `train_mse` (float): Training Mean Squared Error
+  - `test_mse` (float): Test Mean Squared Error
+  - `train_rmse` (float): Training Root Mean Squared Error
+  - `test_rmse` (float): Test Root Mean Squared Error
+  - `train_mae` (float): Training Mean Absolute Error
+  - `test_mae` (float): Test Mean Absolute Error
+  - `train_r2` (float): Training R² score
+  - `test_r2` (float): Test R² score
+  - `cv_r2_mean` (float): Cross-validation R² mean
+  - `cv_r2_std` (float): Cross-validation R² standard deviation
+</ParamField>
+
+## Return Value
+
+<ResponseField name="return" type="None">
+  This function does not return a value. It prints formatted output to the console.
+</ResponseField>
+
+## Output Format
+
+The function prints a formatted table showing:
+
+1. **Model Name Header** - Clearly identifies the model being evaluated
+2. **Performance Metrics** - Side-by-side comparison of training vs test metrics:
+   - MSE (Mean Squared Error)
+   - RMSE (Root Mean Squared Error)
+   - MAE (Mean Absolute Error)
+   - R² (Coefficient of Determination)
+3. **Cross-Validation Results** - Mean ± standard deviation of CV R² scores
+4. **Model Fit Analysis** - Automatic detection of overfitting or underfitting
+
+### Example Output
+
+```
+==================================================
+Model: Linear Regression (Multivariate)
+==================================================
+Train MSE: 22.5631 | Test MSE: 21.6191
+Train RMSE: 4.7508 | Test RMSE: 4.6496
+Train MAE: 3.4521 | Test MAE: 3.3874
+Train R²: 0.7432 | Test R²: 0.7099
+CV R² (mean±std): 0.6880 ± 0.0521
+✅ Good fit
+```
+
+## Overfitting and Underfitting Detection
+
+The function automatically analyzes the metrics and provides warnings:
+
+<Expandable title="Detection Rules">
+  
+  ### Overfitting Detection
+  
+  **Condition:** `train_r2 - test_r2 > 0.1`
+  
+  **Indicator:** ⚠️ Overfitting detected (train-test R² gap: X.XXXX)
+  
+  **Meaning:** The model performs significantly better on training data than test data, indicating it has memorized training patterns rather than learning generalizable relationships.
+  
+  **Example:**
+  ```
+  Train R²: 0.9277 | Test R²: 0.8495
+  ⚠️  Overfitting detected (train-test R² gap: 0.0782)
+  ```
+  
+  ### Underfitting Detection
+  
+  **Condition:** `train_r2 < 0.5 AND test_r2 < 0.5`
+  
+  **Indicator:** ⚠️ Underfitting detected (low R² on both sets)
+  
+  **Meaning:** The model performs poorly on both training and test data, suggesting it's too simple to capture the underlying patterns in the data.
+  
+  **Example:**
+  ```
+  Train R²: 0.4887 | Test R²: 0.4580
+  ⚠️  Underfitting detected (low R² on both sets)
+  ```
+  
+  ### Good Fit
+  
+  **Condition:** Neither overfitting nor underfitting detected
+  
+  **Indicator:** ✅ Good fit
+  
+  **Meaning:** The model generalizes well, with similar performance on training and test data and reasonable R² scores.
+  
+</Expandable>
+
+## Usage Example
+
+```python
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import train_test_split
+import pandas as pd
+
+# Prepare data
+df = pd.read_csv('house_prices.csv')
+X = df[['area', 'bedrooms', 'bathrooms']]
+y = df['price']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+# Train and evaluate model
+model = DecisionTreeRegressor(max_depth=10, random_state=42)
+model.fit(X_train, y_train)
+
+metrics, predictions = evaluate_model(
+    model, X_train, X_test, y_train, y_test, 
+    "Decision Tree Regression"
+)
+
+# Print formatted metrics
+print_metrics(metrics)
+```
+
+**Output:**
+```
+==================================================
+Model: Decision Tree Regression
+==================================================
+Train MSE: 6.3556 | Test MSE: 11.2138
+Train RMSE: 2.5206 | Test RMSE: 3.3487
+Train MAE: 1.8234 | Test MAE: 2.4521
+Train R²: 0.9277 | Test R²: 0.8495
+CV R² (mean±std): 0.7239 ± 0.0891
+✅ Good fit
+```
+
+## Use Cases
+
+1. **Quick Model Assessment** - Instantly see if your model is performing well
+2. **Debugging** - Identify overfitting/underfitting issues during development
+3. **Model Comparison** - Print metrics for multiple models to compare visually
+4. **Reporting** - Generate formatted output for documentation or reports
+
+## Integration with Workflow
+
+```python
+# Typical workflow
+models = [
+    ('Linear Regression', LinearRegression()),
+    ('Decision Tree', DecisionTreeRegressor(max_depth=10)),
+    ('Neural Network', MLPRegressor(hidden_layer_sizes=(100, 50)))
+]
+
+for name, model in models:
+    model.fit(X_train, y_train)
+    metrics, _ = evaluate_model(model, X_train, X_test, y_train, y_test, name)
+    print_metrics(metrics)  # Print each model's metrics
+    
+    # Save metrics for later comparison
+    with open(f'results/metrics_{name}.json', 'w') as f:
+        json.dump(metrics, f, indent=2)
+```
+
+## Related Functions
+
+- [`evaluate_model()`](/api/evaluate-model) - Generate the metrics dictionary used by this function
+- [`compare_models()`](/api/compare-models) - Compare multiple models side-by-side in a table

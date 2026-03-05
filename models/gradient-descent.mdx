@@ -1,0 +1,363 @@
+---
+title: 'Gradient Descent (SGDRegressor)'
+description: 'Iterative optimization with constant and adaptive learning rates'
+---
+
+## Overview
+
+Gradient descent is an iterative optimization algorithm that finds model parameters by minimizing the loss function. This project uses **SGDRegressor** from scikit-learn, which implements stochastic gradient descent for linear regression.
+
+<Info>
+SGDRegressor with **adaptive learning rate** achieves Test R² of **0.710**, matching the performance of standard multivariate linear regression while demonstrating iterative optimization.
+</Info>
+
+## Why Gradient Descent?
+
+While standard linear regression uses a closed-form solution (normal equation), gradient descent is essential for:
+
+- **Large datasets**: More memory-efficient than computing matrix inversions
+- **Online learning**: Can update model with new data without retraining from scratch
+- **Non-linear models**: Foundation for neural networks and deep learning
+- **Sparse features**: Efficient with high-dimensional data
+
+## Feature Scaling Required
+
+<Warning>
+**Critical**: Gradient descent requires feature scaling because features with different scales cause the optimization to converge slowly or oscillate.
+</Warning>
+
+```python
+from sklearn.preprocessing import StandardScaler
+
+# Scale features before gradient descent
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# StandardScaler transforms features to:
+# mean = 0, standard deviation = 1
+```
+
+## Implementation
+
+<Tabs>
+  <Tab title="Constant Learning Rate">
+    ### SGDRegressor with Constant Learning Rate
+    
+    Uses a fixed learning rate (eta0) throughout training.
+    
+    **Hyperparameters:**
+    - `loss='squared_error'`: Ordinary least squares
+    - `learning_rate='constant'`: Fixed step size
+    - `eta0=0.01`: Learning rate value
+    - `max_iter=1000`: Maximum training iterations
+    - `early_stopping=True`: Stop if validation score doesn't improve
+    
+    **Code:**
+    ```python
+    from sklearn.linear_model import SGDRegressor
+    from sklearn.preprocessing import StandardScaler
+    
+    # Scale features (required for SGD)
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+    
+    # Train SGD with constant learning rate
+    sgd_constant = SGDRegressor(
+        loss='squared_error',
+        learning_rate='constant',
+        eta0=0.01,
+        max_iter=1000,
+        random_state=42,
+        early_stopping=True,
+        validation_fraction=0.1
+    )
+    
+    sgd_constant.fit(X_train_scaled, y_train)
+    predictions = sgd_constant.predict(X_test_scaled)
+    ```
+    
+    **Performance:**
+    - Train R²: **0.735**
+    - Test R²: **0.694**
+    - Test RMSE: **4.775**
+    - CV R² (mean±std): **0.666 ± 0.088**
+    
+    <Note>
+    Good performance but slightly below adaptive learning rate.
+    </Note>
+  </Tab>
+  
+  <Tab title="Adaptive Learning Rate">
+    ### SGDRegressor with Adaptive Learning Rate
+    
+    Automatically adjusts learning rate during training for better convergence.
+    
+    **Hyperparameters:**
+    - `loss='squared_error'`: Ordinary least squares
+    - `learning_rate='adaptive'`: Decreases when loss stops improving
+    - `eta0=0.01`: Initial learning rate
+    - `max_iter=1000`: Maximum training iterations
+    - `early_stopping=True`: Stop if validation score doesn't improve
+    
+    **Code:**
+    ```python
+    from sklearn.linear_model import SGDRegressor
+    from sklearn.preprocessing import StandardScaler
+    
+    # Scale features (required for SGD)
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+    
+    # Train SGD with adaptive learning rate
+    sgd_adaptive = SGDRegressor(
+        loss='squared_error',
+        learning_rate='adaptive',
+        eta0=0.01,
+        max_iter=1000,
+        random_state=42,
+        early_stopping=True,
+        validation_fraction=0.1
+    )
+    
+    sgd_adaptive.fit(X_train_scaled, y_train)
+    predictions = sgd_adaptive.predict(X_test_scaled)
+    ```
+    
+    **Performance:**
+    - Train R²: **0.742** ⭐
+    - Test R²: **0.710** ⭐
+    - Test RMSE: **4.647**
+    - CV R² (mean±std): **0.690 ± 0.090**
+    
+    <Note>
+    **Best SGD configuration** - matches standard linear regression performance!
+    </Note>
+  </Tab>
+</Tabs>
+
+## Performance Comparison
+
+| Model | Train R² | Test R² | Test RMSE | CV R² |
+|-------|----------|---------|-----------|-------|
+| SGD (constant) | 0.735 | 0.694 | 4.775 | 0.666 ± 0.088 |
+| **SGD (adaptive)** | **0.742** | **0.710** ⭐ | **4.647** | **0.690 ± 0.090** |
+| Linear Regression (Multivariate) | 0.743 | 0.710 | 4.650 | 0.688 ± 0.092 |
+
+<Info>
+**Key Finding**: SGD with adaptive learning rate achieves identical Test R² (0.710) to standard linear regression, proving that gradient descent can match closed-form solution performance when properly configured.
+</Info>
+
+## Learning Rate Strategies
+
+<CodeGroup>
+```python Constant Learning Rate
+# Fixed step size throughout training
+learning_rate = 'constant'
+eta0 = 0.01
+
+# Update rule:
+# θ = θ - 0.01 * gradient
+# (same step size every iteration)
+```
+
+```python Adaptive Learning Rate
+# Decreases learning rate when loss stops improving
+learning_rate = 'adaptive'
+eta0 = 0.01  # initial value
+
+# Update rule:
+# If loss improves: keep current learning rate
+# If loss stagnates: decrease learning rate
+# Allows fine-tuning as it approaches optimum
+```
+
+```python Invscaling (Not Used)
+# Gradually decreases learning rate
+learning_rate = 'invscaling'
+eta0 = 0.01
+power_t = 0.25
+
+# Update rule:
+# learning_rate = eta0 / (t ** power_t)
+# where t is the iteration number
+```
+</CodeGroup>
+
+## How Gradient Descent Works
+
+### Algorithm Steps
+
+1. **Initialize**: Start with random weights θ
+2. **Compute predictions**: ŷ = Xθ
+3. **Calculate loss**: MSE = mean((y - ŷ)²)
+4. **Compute gradient**: ∇L = -2X^T(y - ŷ) / n
+5. **Update weights**: θ = θ - η∇L
+6. **Repeat**: Steps 2-5 until convergence
+
+### Stochastic vs Batch
+
+**SGDRegressor** uses **stochastic** gradient descent:
+
+- **Batch GD**: Uses all training samples to compute gradient (slow)
+- **Stochastic GD**: Uses random subset (mini-batch) for each update (fast)
+- **Advantage**: Much faster on large datasets, can escape local minima
+
+```python
+# SGDRegressor automatically uses mini-batches
+sgd = SGDRegressor(
+    loss='squared_error',
+    max_iter=1000,
+    # Mini-batch sampling handled internally
+)
+```
+
+## Early Stopping
+
+Both configurations use early stopping to prevent overfitting:
+
+```python
+sgd = SGDRegressor(
+    early_stopping=True,      # Enable early stopping
+    validation_fraction=0.1,  # Use 10% of training data for validation
+    n_iter_no_change=5,       # Stop if no improvement for 5 iterations
+    tol=1e-3                  # Minimum improvement threshold
+)
+```
+
+<Info>
+Early stopping monitors validation loss and stops training when performance plateaus, preventing overfitting and saving computation time.
+</Info>
+
+## Full Training Example
+
+<CodeGroup>
+```python Complete Pipeline
+from sklearn.linear_model import SGDRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score, mean_squared_error
+import numpy as np
+
+# 1. Feature scaling (required!)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# 2. Configure SGD configurations
+sgd_configs = [
+    {
+        'loss': 'squared_error',
+        'learning_rate': 'constant',
+        'eta0': 0.01,
+        'name': 'SGD (constant)'
+    },
+    {
+        'loss': 'squared_error',
+        'learning_rate': 'adaptive',
+        'eta0': 0.01,
+        'name': 'SGD (adaptive)'
+    },
+]
+
+# 3. Train and evaluate both configurations
+for config in sgd_configs:
+    print(f"\nTraining {config['name']}...")
+    
+    sgd = SGDRegressor(
+        loss=config['loss'],
+        learning_rate=config['learning_rate'],
+        eta0=config['eta0'],
+        max_iter=1000,
+        random_state=42,
+        early_stopping=True,
+        validation_fraction=0.1
+    )
+    
+    sgd.fit(X_train_scaled, y_train)
+    
+    # Evaluate
+    y_pred = sgd.predict(X_test_scaled)
+    test_r2 = r2_score(y_test, y_pred)
+    test_rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+    
+    print(f"Test R²: {test_r2:.4f}")
+    print(f"Test RMSE: {test_rmse:.4f}")
+    print(f"Converged in {sgd.n_iter_} iterations")
+```
+
+```python Save Models
+import joblib
+
+# Save trained SGD model
+joblib.dump(sgd_adaptive, 'sgd_adaptive.joblib')
+
+# Save scaler (needed for new predictions)
+joblib.dump(scaler, 'scaler.joblib')
+
+# Load and predict later
+loaded_sgd = joblib.load('sgd_adaptive.joblib')
+loaded_scaler = joblib.load('scaler.joblib')
+
+X_new_scaled = loaded_scaler.transform(X_new)
+predictions = loaded_sgd.predict(X_new_scaled)
+```
+</CodeGroup>
+
+## When to Use Gradient Descent
+
+<CardGroup cols={2}>
+  <Card title="Use SGDRegressor" icon="circle-check" color="#10b981">
+    - **Large datasets** (>100K samples)
+    - **Online learning** (streaming data)
+    - **Memory constraints**
+    - **Sparse features**
+    - Learning about optimization
+  </Card>
+  
+  <Card title="Use Linear Regression" icon="circle-info" color="#3b82f6">
+    - **Small/medium datasets** (under 100K samples)
+    - **Need exact solution**
+    - **Faster training** on small data
+    - **No feature scaling needed**
+    - Production simplicity
+  </Card>
+</CardGroup>
+
+## Key Takeaways
+
+1. **Adaptive learning rate wins**: Test R² of 0.710 matches standard linear regression
+2. **Feature scaling is mandatory**: StandardScaler required for convergence
+3. **Early stopping prevents overfitting**: Automatically stops when validation performance plateaus
+4. **Iterative approach works**: Proves gradient descent can match closed-form solution
+5. **Practical for large datasets**: More efficient than matrix operations on big data
+
+## Hyperparameter Tuning
+
+Key hyperparameters to experiment with:
+
+```python
+sgd = SGDRegressor(
+    loss='squared_error',           # 'squared_error', 'huber', 'epsilon_insensitive'
+    learning_rate='adaptive',       # 'constant', 'optimal', 'invscaling', 'adaptive'
+    eta0=0.01,                      # Initial learning rate (try 0.001, 0.01, 0.1)
+    max_iter=1000,                  # Maximum iterations (increase if not converging)
+    tol=1e-3,                       # Convergence tolerance
+    early_stopping=True,            # Enable/disable early stopping
+    validation_fraction=0.1,        # Validation set size (0.1 = 10%)
+    n_iter_no_change=5,             # Patience for early stopping
+    random_state=42                 # For reproducibility
+)
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Advanced Models" icon="brain" href="/models/advanced-models">
+    Explore Decision Trees and Neural Networks
+  </Card>
+  <Card title="Linear Regression" icon="arrow-trend-up" href="/models/linear-regression">
+    Compare with standard linear regression approach
+  </Card>
+</CardGroup>

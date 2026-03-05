@@ -1,0 +1,439 @@
+---
+title: 'Advanced Models'
+description: 'Decision Tree Regression and Neural Network (MLP) for house price prediction'
+---
+
+## Overview
+
+Beyond linear models, this project explores two advanced machine learning approaches: **Decision Tree Regression** and **Neural Network Regression (MLP)**. These models can capture complex non-linear patterns that linear models cannot.
+
+<Info>
+**Top Performer**: Decision Tree Regression achieves the best test performance with Test R² of **0.850**, significantly outperforming all linear models.
+</Info>
+
+## Model Comparison
+
+| Model | Test R² | Test RMSE | Complexity |
+|-------|---------|-----------|------------|
+| **Decision Tree** | **0.850** 🏆 | **3.349** 🏆 | Medium |
+| **Neural Network (MLP)** | **0.806** | **3.804** | High |
+| Linear Regression (Multivariate) | 0.710 | 4.650 | Low |
+| SGD (adaptive) | 0.710 | 4.647 | Low |
+| Polynomial (degree=3) | 0.583 | 5.577 | Low |
+
+<Warning>
+While Decision Tree shows the best test R², note the train-test R² gap (0.928 - 0.850 = 0.078) which suggests some overfitting. However, the cross-validation score (0.724) confirms robust performance.
+</Warning>
+
+## Decision Tree Regression
+
+### Overview
+
+Decision trees make predictions by learning a series of if-then-else decision rules from the features. Each leaf node contains a prediction value.
+
+### Implementation
+
+```python
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import r2_score, mean_squared_error
+import numpy as np
+
+# Train decision tree with max_depth constraint
+dt_reg = DecisionTreeRegressor(
+    max_depth=5,        # Limit tree depth to prevent overfitting
+    random_state=42
+)
+
+dt_reg.fit(X_train, y_train)
+
+# Make predictions
+predictions = dt_reg.predict(X_test)
+
+# Evaluate
+test_r2 = r2_score(y_test, predictions)
+test_rmse = np.sqrt(mean_squared_error(y_test, predictions))
+
+print(f"Test R²: {test_r2:.4f}")     # 0.8495
+print(f"Test RMSE: {test_rmse:.4f}")  # 3.3487
+```
+
+### Performance Metrics
+
+- **Train R²**: 0.928
+- **Test R²**: 0.850 🏆 **BEST MODEL**
+- **Train RMSE**: 2.521
+- **Test RMSE**: 3.349
+- **CV R² (mean±std)**: 0.724 ± 0.143
+
+<Note>
+The Decision Tree achieves **20% better R² than linear regression** (0.850 vs 0.710), demonstrating the value of capturing non-linear relationships.
+</Note>
+
+### How Decision Trees Work
+
+```
+Tree Structure Example:
+
+[rm <= 6.8]
+├── Yes: [lstat <= 14.4]
+│   ├── Yes: Predict $30,000
+│   └── No: Predict $22,000
+└── No: [nox <= 0.55]
+    ├── Yes: Predict $45,000
+    └── No: Predict $35,000
+```
+
+**Key Concepts:**
+- **Splits**: Tree chooses feature and threshold that best separates data
+- **Depth**: max_depth=5 limits tree to 5 levels (prevents overfitting)
+- **Leaves**: Final prediction is the average of training samples in that leaf
+
+### Feature Importance
+
+Decision trees provide natural feature importance scores:
+
+```python
+import pandas as pd
+
+# Get feature importance
+feature_importance = pd.DataFrame({
+    'feature': X_train.columns,
+    'importance': dt_reg.feature_importances_
+}).sort_values('importance', ascending=False)
+
+print(feature_importance.head())
+```
+
+### Advantages
+
+<CardGroup cols={2}>
+  <Card title="Pros" icon="circle-check" color="#10b981">
+    - **Best test performance** (R² = 0.850)
+    - Captures non-linear relationships
+    - No feature scaling needed
+    - Interpretable structure
+    - Fast prediction
+    - Handles feature interactions
+  </Card>
+  
+  <Card title="Cons" icon="triangle-exclamation" color="#f59e0b">
+    - Some overfitting (train R² = 0.928)
+    - Can be unstable (high variance)
+    - Higher CV standard deviation (0.143)
+    - May not generalize to very different data
+  </Card>
+</CardGroup>
+
+### Hyperparameter Tuning
+
+```python
+# Key hyperparameters to tune
+dt_reg = DecisionTreeRegressor(
+    max_depth=5,              # Limit tree depth (try 3, 5, 7, 10)
+    min_samples_split=2,      # Min samples to split node (try 2, 5, 10)
+    min_samples_leaf=1,       # Min samples in leaf (try 1, 2, 5)
+    max_features=None,        # Features to consider for split
+    random_state=42
+)
+```
+
+## Neural Network Regression (MLP)
+
+### Overview
+
+Multi-Layer Perceptron (MLP) is a feedforward neural network with hidden layers that can learn complex non-linear patterns through backpropagation.
+
+### Architecture
+
+```
+Input Layer (13 features)
+    ↓
+Hidden Layer 1 (100 neurons) + ReLU
+    ↓
+Hidden Layer 2 (50 neurons) + ReLU
+    ↓
+Output Layer (1 neuron) → Predicted price
+```
+
+### Implementation
+
+```python
+from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score, mean_squared_error
+import numpy as np
+
+# 1. Feature scaling (required for neural networks)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# 2. Train neural network
+nn_reg = MLPRegressor(
+    hidden_layer_sizes=(100, 50),  # 2 hidden layers: 100 and 50 neurons
+    max_iter=1000,                 # Maximum training iterations
+    random_state=42,
+    early_stopping=True            # Stop when validation score stops improving
+)
+
+nn_reg.fit(X_train_scaled, y_train)
+
+# 3. Make predictions
+predictions = nn_reg.predict(X_test_scaled)
+
+# 4. Evaluate
+test_r2 = r2_score(y_test, predictions)
+test_rmse = np.sqrt(mean_squared_error(y_test, predictions))
+
+print(f"Test R²: {test_r2:.4f}")     # 0.8058
+print(f"Test RMSE: {test_rmse:.4f}")  # 3.8044
+```
+
+### Performance Metrics
+
+- **Train R²**: 0.846
+- **Test R²**: 0.806
+- **Train RMSE**: 3.684
+- **Test RMSE**: 3.804
+- **CV R² (mean±std)**: 0.785 ± 0.109
+
+<Note>
+Neural Network achieves **14% better R² than linear regression** (0.806 vs 0.710) and shows excellent generalization with minimal overfitting (train-test gap = 0.040).
+</Note>
+
+### Why Feature Scaling Matters
+
+<Warning>
+**Critical**: Neural networks require feature scaling because:
+- Gradient descent converges faster with normalized features
+- Prevents features with large values from dominating
+- All features contribute equally to learning
+</Warning>
+
+```python
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Each feature now has:
+# - Mean ≈ 0
+# - Standard deviation ≈ 1
+```
+
+### Architecture Details
+
+**Hidden Layers:** `(100, 50)`
+- **Layer 1**: 13 inputs → 100 neurons → ReLU activation
+- **Layer 2**: 100 inputs → 50 neurons → ReLU activation
+- **Output**: 50 inputs → 1 neuron → Linear (predicted price)
+
+**Total Parameters:**
+- Layer 1: (13 × 100) + 100 bias = 1,400 parameters
+- Layer 2: (100 × 50) + 50 bias = 5,050 parameters
+- Output: (50 × 1) + 1 bias = 51 parameters
+- **Total: 6,501 trainable parameters**
+
+### Activation Functions
+
+```python
+# ReLU activation (default)
+activation = 'relu'
+# f(x) = max(0, x)
+# Pros: Fast, prevents vanishing gradients
+
+# Other options:
+# 'tanh': f(x) = tanh(x)  
+# 'logistic': f(x) = 1/(1 + e^(-x))
+```
+
+### Early Stopping
+
+```python
+nn_reg = MLPRegressor(
+    hidden_layer_sizes=(100, 50),
+    early_stopping=True,         # Enable early stopping
+    validation_fraction=0.1,     # 10% for validation
+    n_iter_no_change=10,         # Patience: stop after 10 epochs without improvement
+    max_iter=1000
+)
+```
+
+<Info>
+Early stopping prevents overfitting by monitoring validation loss and stopping training when performance plateaus.
+</Info>
+
+### Advantages
+
+<CardGroup cols={2}>
+  <Card title="Pros" icon="circle-check" color="#10b981">
+    - Strong performance (R² = 0.806)
+    - **Minimal overfitting** (train-test gap = 0.040)
+    - Learns complex patterns
+    - Good generalization
+    - Low CV standard deviation (0.109)
+  </Card>
+  
+  <Card title="Cons" icon="triangle-exclamation" color="#f59e0b">
+    - Requires feature scaling
+    - **Longer training time** (~1 second vs 0.1s for linear)
+    - Less interpretable ("black box")
+    - More hyperparameters to tune
+    - Can get stuck in local minima
+  </Card>
+</CardGroup>
+
+### Hyperparameter Tuning
+
+```python
+nn_reg = MLPRegressor(
+    hidden_layer_sizes=(100, 50),   # Architecture (try (50,), (100,), (100,50), (200,100,50))
+    activation='relu',              # Activation function ('relu', 'tanh', 'logistic')
+    solver='adam',                  # Optimizer ('adam', 'sgd', 'lbfgs')
+    alpha=0.0001,                   # L2 regularization (try 0.0001, 0.001, 0.01)
+    learning_rate_init=0.001,       # Initial learning rate
+    max_iter=1000,                  # Maximum epochs
+    early_stopping=True,            # Enable early stopping
+    validation_fraction=0.1,        # Validation set size
+    random_state=42
+)
+```
+
+## Complete Training Pipeline
+
+<CodeGroup>
+```python Decision Tree
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import cross_val_score
+import joblib
+
+# No feature scaling needed
+dt_reg = DecisionTreeRegressor(max_depth=5, random_state=42)
+dt_reg.fit(X_train, y_train)
+
+# Evaluate
+y_pred = dt_reg.predict(X_test)
+test_r2 = r2_score(y_test, y_pred)
+test_rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+
+# Cross-validation
+cv_scores = cross_val_score(dt_reg, X_train, y_train, cv=5, scoring='r2')
+
+print(f"Test R²: {test_r2:.4f}")  # 0.8495
+print(f"CV R²: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
+
+# Save model
+joblib.dump(dt_reg, 'decision_tree.joblib')
+```
+
+```python Neural Network
+from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import StandardScaler
+import joblib
+
+# Feature scaling (required!)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Train neural network
+nn_reg = MLPRegressor(
+    hidden_layer_sizes=(100, 50),
+    max_iter=1000,
+    random_state=42,
+    early_stopping=True
+)
+nn_reg.fit(X_train_scaled, y_train)
+
+# Evaluate
+y_pred = nn_reg.predict(X_test_scaled)
+test_r2 = r2_score(y_test, y_pred)
+test_rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+
+# Cross-validation
+cv_scores = cross_val_score(nn_reg, X_train_scaled, y_train, cv=5, scoring='r2')
+
+print(f"Test R²: {test_r2:.4f}")  # 0.8058
+print(f"CV R²: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
+
+# Save model and scaler
+joblib.dump(nn_reg, 'neural_network.joblib')
+joblib.dump(scaler, 'scaler.joblib')
+```
+</CodeGroup>
+
+## Model Selection Guide
+
+### When to Use Decision Tree
+
+✅ **Best for:**
+- Highest prediction accuracy needed (R² = 0.850)
+- Feature importance interpretation
+- No feature scaling allowed
+- Fast prediction required
+- Handling feature interactions
+
+⚠️ **Consider:**
+- Slightly higher overfitting risk
+- May not generalize to very different data distributions
+
+### When to Use Neural Network
+
+✅ **Best for:**
+- Complex non-linear patterns
+- Good generalization (minimal overfitting)
+- Stable predictions across CV folds
+- Larger datasets (scales well)
+- Transfer learning potential
+
+⚠️ **Consider:**
+- Requires feature scaling
+- Longer training time
+- Less interpretable
+- More hyperparameters to tune
+
+### When to Use Linear Models
+
+✅ **Best for:**
+- Interpretability critical
+- Simple baseline
+- Fast training and prediction
+- Small datasets
+- Feature coefficients needed
+
+⚠️ **Consider:**
+- Lower accuracy (R² = 0.710 vs 0.850)
+- Cannot capture complex non-linear patterns
+
+## Final Comparison: All Models
+
+| Rank | Model | Test R² | Test RMSE | Train-Test Gap | CV R² | Training Time |
+|------|-------|---------|-----------|----------------|-------|---------------|
+| 🥇 | **Decision Tree** | **0.850** | **3.349** | 0.078 | 0.724 ± 0.143 | Fast |
+| 🥈 | **Neural Network** | **0.806** | **3.804** | 0.040 | 0.785 ± 0.109 | Slow |
+| 🥉 | **Linear (Multi)** | **0.710** | **4.650** | 0.033 | 0.688 ± 0.092 | Very Fast |
+| 4 | SGD (adaptive) | 0.710 | 4.647 | 0.032 | 0.690 ± 0.090 | Fast |
+| 5 | Linear (Feature Sel.) | 0.651 | 5.099 | 0.036 | 0.651 ± 0.090 | Very Fast |
+| 6 | Polynomial (deg=3) | 0.583 | 5.577 | -0.034 | 0.491 ± 0.205 | Fast |
+| 7 | Polynomial (deg=2) | 0.567 | 5.679 | -0.031 | 0.483 ± 0.224 | Fast |
+| 8 | Linear (Univariate) | 0.458 | 6.355 | 0.031 | 0.452 ± 0.177 | Very Fast |
+
+## Key Takeaways
+
+1. **Decision Tree is the winner**: Achieves R² of 0.850, significantly better than all other models
+2. **Neural Network is runner-up**: R² of 0.806 with excellent generalization
+3. **Non-linear models excel**: Both advanced models outperform linear approaches by 14-20%
+4. **Trade-offs exist**: Higher accuracy comes with complexity and training time
+5. **Linear models still valuable**: Fast, interpretable, and good baseline (R² = 0.710)
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Linear Regression" icon="arrow-trend-up" href="/models/linear-regression">
+    Review the best linear model baseline
+  </Card>
+  <Card title="Polynomial Regression" icon="chart-line" href="/models/polynomial-regression">
+    Understand polynomial feature transformations
+  </Card>
+</CardGroup>

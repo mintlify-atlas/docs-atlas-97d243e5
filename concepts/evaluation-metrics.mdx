@@ -1,0 +1,435 @@
+---
+title: 'Evaluation Metrics'
+description: 'Understanding MSE, RMSE, MAE, R², and cross-validation for regression models'
+icon: 'chart-line'
+---
+
+## Overview
+
+This project uses **5 key metrics** to evaluate regression model performance. Each metric provides different insights into prediction accuracy and model quality.
+
+<Info>
+  All metrics are calculated on both **training** and **test** sets to detect overfitting or underfitting.
+</Info>
+
+## Regression Metrics
+
+### 1. Mean Squared Error (MSE)
+
+<Accordion title="What is MSE?" defaultOpen>
+  **MSE** measures the average squared difference between predicted and actual values.
+  
+  **Formula**:
+  ```python
+  MSE = (1/n) × Σ(y_actual - y_predicted)²
+  ```
+  
+  **Implementation** (from `eval_model_src.py:18`):
+  ```python
+  from sklearn.metrics import mean_squared_error
+  
+  train_mse = mean_squared_error(y_train, y_train_pred)
+  test_mse = mean_squared_error(y_test, y_test_pred)
+  ```
+  
+  **Characteristics**:
+  - Squares errors → penalizes large errors heavily
+  - Always positive (0 = perfect prediction)
+  - Unit: squared units (e.g., $1000²)
+  - **Lower is better**
+</Accordion>
+
+<Accordion title="When to use MSE">
+  - When you want to **penalize large errors** more than small ones
+  - When outliers should have **significant impact** on model evaluation
+  - When working with normally distributed residuals
+  
+  **Example**: In house price prediction, a $10,000 error is more than twice as bad as a $5,000 error.
+</Accordion>
+
+### 2. Root Mean Squared Error (RMSE)
+
+<Accordion title="What is RMSE?" defaultOpen>
+  **RMSE** is the square root of MSE, bringing the metric back to original units.
+  
+  **Formula**:
+  ```python
+  RMSE = √MSE = √[(1/n) × Σ(y_actual - y_predicted)²]
+  ```
+  
+  **Implementation** (from `eval_model_src.py:19-20`):
+  ```python
+  import numpy as np
+  
+  train_rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
+  test_rmse = np.sqrt(mean_squared_error(y_test, y_test_pred))
+  ```
+  
+  **Characteristics**:
+  - Same unit as target variable ($1000s)
+  - Easier to interpret than MSE
+  - Still penalizes large errors
+  - **Lower is better**
+  
+  **Example**: RMSE = 4.650 means average prediction error of $4,650
+</Accordion>
+
+<Accordion title="When to use RMSE">
+  - When you need **interpretable error magnitude** in original units
+  - When comparing models on the same dataset
+  - Standard metric for regression competitions
+  
+  **Best Model in Project**: Linear Regression (Multivariate) with **Test RMSE = 4.650** ($4,650 average error)
+</Accordion>
+
+### 3. Mean Absolute Error (MAE)
+
+<Accordion title="What is MAE?" defaultOpen>
+  **MAE** measures the average absolute difference between predictions and actuals.
+  
+  **Formula**:
+  ```python
+  MAE = (1/n) × Σ|y_actual - y_predicted|
+  ```
+  
+  **Implementation** (from `eval_model_src.py:21-22`):
+  ```python
+  from sklearn.metrics import mean_absolute_error
+  
+  train_mae = mean_absolute_error(y_train, y_train_pred)
+  test_mae = mean_absolute_error(y_test, y_test_pred)
+  ```
+  
+  **Characteristics**:
+  - Uses absolute values (no squaring)
+  - Same unit as target variable
+  - **Does not penalize large errors** as heavily as MSE/RMSE
+  - More robust to outliers
+  - **Lower is better**
+</Accordion>
+
+<Accordion title="MSE vs MAE: When to use each">
+  | Metric | Use When | Sensitivity to Outliers |
+  |--------|----------|------------------------|
+  | **MAE** | Outliers should not dominate | Low - treats all errors equally |
+  | **MSE/RMSE** | Large errors are critical | High - squares amplify large errors |
+  
+  **In this project**: Both are used to get a complete picture of model performance.
+</Accordion>
+
+### 4. R² Score (Coefficient of Determination)
+
+<Accordion title="What is R²?" defaultOpen>
+  **R²** measures the proportion of variance in the target variable explained by the model.
+  
+  **Formula**:
+  ```python
+  R² = 1 - (SS_residual / SS_total)
+  R² = 1 - [Σ(y_actual - y_predicted)² / Σ(y_actual - y_mean)²]
+  ```
+  
+  **Implementation** (from `eval_model_src.py:23-24`):
+  ```python
+  from sklearn.metrics import r2_score
+  
+  train_r2 = r2_score(y_train, y_train_pred)
+  test_r2 = r2_score(y_test, y_test_pred)
+  ```
+  
+  **Interpretation**:
+  - **R² = 1.0**: Perfect predictions (100% variance explained)
+  - **R² = 0.7**: Model explains 70% of variance
+  - **R² = 0.0**: Model no better than predicting the mean
+  - **R² < 0**: Model worse than baseline (predicting mean)
+  - **Higher is better**
+</Accordion>
+
+<Accordion title="Understanding R² Values">
+  | R² Range | Interpretation | Quality |
+  |----------|----------------|----------|
+  | **0.9 - 1.0** | Excellent fit | 90-100% variance explained |
+  | **0.7 - 0.9** | Good fit | 70-90% variance explained |
+  | **0.5 - 0.7** | Moderate fit | 50-70% variance explained |
+  | **0.3 - 0.5** | Weak fit | 30-50% variance explained |
+  | **&lt; 0.3** | Poor fit | Less than 30% variance explained |
+  
+  **Best Model in Project**: Linear Regression (Multivariate) with **Test R² = 0.710** (Good fit)
+</Accordion>
+
+<Accordion title="Why R² is the Primary Metric">
+  - **Scale-independent**: Works across different datasets
+  - **Intuitive**: "% of variance explained"
+  - **Comparative**: Easy to compare models
+  - **Standard**: Widely used in statistics and ML
+  
+  In this project, **models are primarily ranked by Test R²**.
+</Accordion>
+
+## 5. Cross-Validation (5-Fold CV)
+
+<Accordion title="What is Cross-Validation?" defaultOpen>
+  **Cross-validation** evaluates model performance across multiple train-test splits to ensure robustness.
+  
+  **5-Fold CV Process**:
+  1. Split training data into 5 equal parts (folds)
+  2. Train on 4 folds, test on 1 fold
+  3. Repeat 5 times (each fold used as test once)
+  4. Calculate mean and standard deviation of scores
+  
+  **Implementation** (from `eval_model_src.py:27-29`):
+  ```python
+  from sklearn.model_selection import cross_val_score
+  
+  # 5-fold cross-validation on training set
+  cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='r2')
+  cv_r2_mean = cv_scores.mean()
+  cv_r2_std = cv_scores.std()
+  ```
+  
+  **Output Format**: `0.688 ± 0.092`
+  - Mean R² across 5 folds: 0.688
+  - Standard deviation: 0.092 (indicates consistency)
+</Accordion>
+
+<Accordion title="Why Use Cross-Validation?">
+  **Benefits**:
+  - **Detects overfitting**: If CV score much less than train score, indicates overfitting
+  - **Measures stability**: Low std → consistent performance
+  - **Better estimate**: More reliable than single train-test split
+  - **Reduces variance**: Averages over multiple splits
+  
+  **Example** (from project results):
+  ```
+  Model: Linear Regression (Multivariate)
+  Train R²: 0.743
+  Test R²: 0.710
+  CV R²: 0.688 ± 0.092
+  
+  ✅ Good fit - consistent across splits
+  ```
+</Accordion>
+
+## Model Evaluation Function
+
+Here's the complete evaluation function used in this project:
+
+```python
+# From eval_model_src.py
+from typing import Any, Dict, Tuple
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.model_selection import cross_val_score
+import numpy as np
+
+def evaluate_model(
+    model: Any,
+    X_train: Any,
+    X_test: Any,
+    y_train: Any,
+    y_test: Any,
+    model_name: str
+) -> Tuple[Dict[str, Any], Any]:
+    """Evaluate model and return metrics"""
+    
+    # Generate predictions
+    y_train_pred = model.predict(X_train)
+    y_test_pred = model.predict(X_test)
+    
+    # Calculate all metrics
+    metrics: Dict[str, Any] = {
+        'model_name': model_name,
+        'train_mse': mean_squared_error(y_train, y_train_pred),
+        'test_mse': mean_squared_error(y_test, y_test_pred),
+        'train_rmse': np.sqrt(mean_squared_error(y_train, y_train_pred)),
+        'test_rmse': np.sqrt(mean_squared_error(y_test, y_test_pred)),
+        'train_mae': mean_absolute_error(y_train, y_train_pred),
+        'test_mae': mean_absolute_error(y_test, y_test_pred),
+        'train_r2': r2_score(y_train, y_train_pred),
+        'test_r2': r2_score(y_test, y_test_pred),
+    }
+    
+    # 5-fold cross-validation
+    cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='r2')
+    metrics['cv_r2_mean'] = cv_scores.mean()
+    metrics['cv_r2_std'] = cv_scores.std()
+    
+    return metrics, y_test_pred
+```
+
+## Detecting Overfitting and Underfitting
+
+The evaluation function includes automatic detection (from `eval_model_src.py:44-51`):
+
+<Accordion title="Overfitting Detection" defaultOpen>
+  **Condition**: `train_r2 - test_r2 > 0.1`
+  
+  ```python
+  diff = metrics['train_r2'] - metrics['test_r2']
+  if diff > 0.1:
+      print(f"⚠️  Overfitting detected (train-test R² gap: {diff:.4f})")
+  ```
+  
+  **Interpretation**:
+  - Model memorizes training data but fails to generalize
+  - Large gap between train and test performance
+  - Solution: Regularization, simpler model, more data
+  
+  **Example**: Polynomial degree 3 shows signs of overfitting
+  - Train R² = 0.549
+  - Test R² = 0.583
+  - But high CV std (0.205) indicates instability
+</Accordion>
+
+<Accordion title="Underfitting Detection">
+  **Condition**: `train_r2 < 0.5 AND test_r2 < 0.5`
+  
+  ```python
+  elif metrics['train_r2'] < 0.5 and metrics['test_r2'] < 0.5:
+      print(f"⚠️  Underfitting detected (low R² on both sets)")
+  ```
+  
+  **Interpretation**:
+  - Model too simple to capture patterns
+  - Poor performance on both train and test
+  - Solution: More features, more complex model, feature engineering
+  
+  **Example**: Univariate Linear Regression
+  - Train R² = 0.489
+  - Test R² = 0.458
+  - ⚠️ Underfitting - only using 1 feature (rm)
+</Accordion>
+
+<Accordion title="Good Fit">
+  **Condition**: Neither overfitting nor underfitting
+  
+  ```python
+  else:
+      print(f"✅ Good fit")
+  ```
+  
+  **Characteristics**:
+  - Train and test R² are close (gap less than 0.1)
+  - Both scores are reasonably high (above 0.5)
+  - Low CV standard deviation (less than 0.1)
+  
+  **Example**: Multivariate Linear Regression
+  - Train R² = 0.743
+  - Test R² = 0.710
+  - Gap = 0.033 ✅
+  - CV R² = 0.688 ± 0.092 ✅
+</Accordion>
+
+## Model Performance Comparison
+
+From the project README (actual results):
+
+| Model | Train R² | Test R² | Test RMSE | CV R² (mean±std) | Status |
+|-------|----------|---------|-----------|------------------|--------|
+| **Linear (Multivariate)** | 0.743 | **0.710** | **4.650** | 0.688 ± 0.092 | ✅ Best Model |
+| **Linear (Feature Selection)** | 0.687 | 0.651 | 5.099 | 0.651 ± 0.090 | ✅ Good Fit |
+| **Polynomial (degree=3)** | 0.549 | 0.583 | 5.577 | 0.491 ± 0.205 | ⚠️ Unstable |
+| **Polynomial (degree=2)** | 0.536 | 0.567 | 5.679 | 0.483 ± 0.224 | ⚠️ Unstable |
+| **Linear (Univariate)** | 0.489 | 0.458 | 6.355 | 0.452 ± 0.177 | ⚠️ Underfitting |
+
+<Note>
+  **Winner**: Linear Regression with all 13 features achieves the best balance of accuracy, stability, and generalization.
+</Note>
+
+## Metrics Output Example
+
+Here's what the evaluation output looks like (from `eval_model_src.py:35-42`):
+
+```python
+def print_metrics(metrics: Dict[str, Any]) -> None:
+    """Print model metrics"""
+    print(f"\n{'='*50}")
+    print(f"Model: {metrics['model_name']}")
+    print(f"{'='*50}")
+    print(f"Train MSE: {metrics['train_mse']:.4f} | Test MSE: {metrics['test_mse']:.4f}")
+    print(f"Train RMSE: {metrics['train_rmse']:.4f} | Test RMSE: {metrics['test_rmse']:.4f}")
+    print(f"Train MAE: {metrics['train_mae']:.4f} | Test MAE: {metrics['test_mae']:.4f}")
+    print(f"Train R²: {metrics['train_r2']:.4f} | Test R²: {metrics['test_r2']:.4f}")
+    print(f"CV R² (mean±std): {metrics['cv_r2_mean']:.4f} ± {metrics['cv_r2_std']:.4f}")
+```
+
+**Example Output**:
+```
+==================================================
+Model: Linear Regression (Multivariate)
+==================================================
+Train MSE: 21.8946 | Test MSE: 21.6249
+Train RMSE: 4.6792 | Test RMSE: 4.6504
+Train MAE: 3.2707 | Test MAE: 3.1881
+Train R²: 0.7435 | Test R²: 0.7100
+CV R² (mean±std): 0.6876 ± 0.0923
+✅ Good fit
+```
+
+## Quick Reference
+
+<CardGroup cols={2}>
+  <Card title="MSE" icon="square">
+    **Mean Squared Error**
+    
+    - Squares errors
+    - Penalizes outliers heavily
+    - Unit: squared ($1000²)
+    - Lower is better
+  </Card>
+  
+  <Card title="RMSE" icon="square-root-variable">
+    **Root Mean Squared Error**
+    
+    - Square root of MSE
+    - Original units ($1000s)
+    - Interpretable magnitude
+    - Lower is better
+  </Card>
+  
+  <Card title="MAE" icon="equals">
+    **Mean Absolute Error**
+    
+    - Absolute differences
+    - Robust to outliers
+    - Original units ($1000s)
+    - Lower is better
+  </Card>
+  
+  <Card title="R²" icon="percentage">
+    **R-Squared Score**
+    
+    - % variance explained
+    - Range: 0 to 1
+    - Scale-independent
+    - Higher is better
+  </Card>
+  
+  <Card title="CV" icon="repeat">
+    **Cross-Validation**
+    
+    - 5-fold splits
+    - Measures stability
+    - Mean ± std format
+    - Detects overfitting
+  </Card>
+  
+  <Card title="Train vs Test" icon="code-compare">
+    **Overfitting Detection**
+    
+    - Compare train & test R²
+    - Gap > 0.1 → overfitting
+    - Both < 0.5 → underfitting
+    - Small gap → good fit
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Dataset Overview" icon="database" href="/concepts/dataset">
+    Learn about the Boston Housing dataset structure
+  </Card>
+  
+  <Card title="Feature Analysis" icon="sliders" href="/concepts/features">
+    Understand feature correlations and importance
+  </Card>
+</CardGroup>

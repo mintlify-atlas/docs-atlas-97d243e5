@@ -1,0 +1,408 @@
+---
+title: 'Model Training Workflow'
+description: 'Complete walkthrough of training multiple regression models using train.ipynb'
+icon: 'brain'
+---
+
+# Model Training Workflow
+
+This guide provides a complete walkthrough of the model training process using `train.ipynb`. You'll learn how to train 9 different regression models, from simple linear regression to neural networks.
+
+## Overview
+
+The training notebook implements:
+- **70/30 train-test split** for model evaluation
+- **5-fold cross-validation** to assess model stability
+- **Multiple model types**: Linear, Polynomial, Gradient Descent, Decision Tree, Neural Network
+- **Comprehensive metrics**: MSE, RMSE, MAE, R², Cross-validation scores
+
+## Setup and Data Preparation
+
+<Steps>
+  <Step title="Launch the training notebook">
+    ```bash
+    cd notebooks
+    jupyter notebook train.ipynb
+    ```
+  </Step>
+
+  <Step title="Run the setup cell">
+    The first cell imports all required libraries and creates the results directory:
+
+    ```python
+    from pathlib import Path
+    import pandas as pd
+    import numpy as np
+    import json
+    import joblib
+    from sklearn.model_selection import train_test_split, cross_val_score
+    from sklearn.linear_model import LinearRegression, SGDRegressor
+    from sklearn.tree import DecisionTreeRegressor
+    from sklearn.neural_network import MLPRegressor
+    
+    # Create results directory
+    PROJECT_DIR = Path('../')
+    RESULTS_DIR = PROJECT_DIR / 'results'
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    ```
+  </Step>
+
+  <Step title="Load and split the data">
+    The notebook downloads the dataset and creates a 70/30 split:
+
+    ```python
+    # Load dataset
+    df = pd.read_csv(path + '/BostonHousing.csv')
+    
+    # Handle missing values - fill with median
+    df = df.fillna(df.median())
+    
+    # Define features and target
+    X = df.drop('medv', axis=1)
+    y = df['medv']
+    
+    # Train/test split (70/30)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.30, random_state=42
+    )
+    ```
+
+    **Output:**
+    ```
+    Missing values after cleaning: 0
+    Training set: 354 samples
+    Test set: 152 samples
+    ```
+  </Step>
+</Steps>
+
+<Note>
+All split data is automatically saved to the `results/` directory:
+- `X_train.csv`, `X_test.csv`
+- `y_train.csv`, `y_test.csv`
+</Note>
+
+## Models Trained
+
+### 1. Univariate Linear Regression
+
+Trains on only the strongest feature (`rm` - number of rooms):
+
+```python
+X_train_uni = X_train[['rm']]
+X_test_uni = X_test[['rm']]
+
+lr_uni = LinearRegression()
+lr_uni.fit(X_train_uni, y_train)
+```
+
+**Performance:**
+```
+Train R²: 0.4887 | Test R²: 0.4580
+Train RMSE: 6.7039 | Test RMSE: 6.3550
+CV R² (mean±std): 0.4524 ± 0.1773
+⚠️ Underfitting detected (low R² on both sets)
+```
+
+**Files saved:**
+- `results/linear_univariate.joblib`
+- `results/pred_linear_univariate.npy`
+- `results/metrics_linear_univariate.json`
+
+### 2. Multivariate Linear Regression
+
+Uses all 13 features for prediction:
+
+```python
+lr_multi = LinearRegression()
+lr_multi.fit(X_train, y_train)
+```
+
+**Performance:**
+```
+Train R²: 0.7432 | Test R²: 0.7099
+Train RMSE: 4.7508 | Test RMSE: 4.6496
+CV R² (mean±std): 0.6880 ± 0.0923
+✅ Good fit
+```
+
+**Top 5 Most Important Features:**
+```
+    feature  coefficient
+nox         -15.423388   # Air pollution (strongest negative impact)
+rm            4.056626   # Rooms per dwelling
+chas          3.121412   # Near Charles River
+dis          -1.379212   # Distance to employment
+ptratio      -0.912924   # Student-teacher ratio
+```
+
+**Files saved:**
+- `results/linear_multivariate.joblib`
+- `results/pred_linear_multivariate.npy`
+- `results/metrics_linear_multivariate.json`
+
+### 3. Feature Selection Model
+
+Selects top 6 correlated features:
+
+```python
+# Select features based on correlation with target
+correlations = df.corr()['medv'].drop('medv').abs().sort_values(ascending=False)
+top_features = correlations.head(6).index.tolist()
+# Selected: ['lstat', 'rm', 'ptratio', 'indus', 'tax', 'nox']
+
+lr_fs = LinearRegression()
+lr_fs.fit(X_train[top_features], y_train)
+```
+
+**Performance:**
+```
+Train R²: 0.6873 | Test R²: 0.6511
+Train RMSE: 5.2428 | Test RMSE: 5.0990
+✅ Good fit
+```
+
+**Files saved:**
+- `results/linear_feature_selection.joblib`
+- `results/pred_linear_feature_selection.npy`
+
+### 4. Polynomial Regression (Degree 2 & 3)
+
+Creates polynomial features from `rm` (rooms):
+
+<CodeGroup>
+```python Degree 2
+poly = PolynomialFeatures(degree=2, include_bias=False)
+X_train_poly = poly.fit_transform(X_train_uni)
+
+lr_poly = LinearRegression()
+lr_poly.fit(X_train_poly, y_train)
+
+# Performance
+Train R²: 0.5362 | Test R²: 0.5672
+```
+
+```python Degree 3
+poly = PolynomialFeatures(degree=3, include_bias=False)
+X_train_poly = poly.fit_transform(X_train_uni)
+
+lr_poly = LinearRegression()
+lr_poly.fit(X_train_poly, y_train)
+
+# Performance
+Train R²: 0.5491 | Test R²: 0.5825
+```
+</CodeGroup>
+
+**Comparison:**
+```
+Degree 2: Train R²=0.5362, Test R²=0.5672, CV R²=0.4829
+Degree 3: Train R²=0.5491, Test R²=0.5825, CV R²=0.4908
+```
+
+**Files saved per degree:**
+- `results/polynomial_degree2.joblib`
+- `results/polynomial_transformer_degree2.joblib`
+- `results/pred_polynomial_degree2.npy`
+
+### 5. Stochastic Gradient Descent (SGD)
+
+Implements gradient descent optimization with two learning rate strategies:
+
+```python
+# Scale features first (required for gradient descent)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# SGD with constant learning rate
+sgd_constant = SGDRegressor(
+    loss='squared_error',
+    learning_rate='constant',
+    eta0=0.01,
+    max_iter=1000,
+    random_state=42,
+    early_stopping=True
+)
+sgd_constant.fit(X_train_scaled, y_train)
+
+# SGD with adaptive learning rate
+sgd_adaptive = SGDRegressor(
+    loss='squared_error',
+    learning_rate='adaptive',
+    eta0=0.01,
+    max_iter=1000,
+    random_state=42,
+    early_stopping=True
+)
+sgd_adaptive.fit(X_train_scaled, y_train)
+```
+
+**Performance Comparison:**
+```
+SGD (constant):  Train R²=0.7347 | Test R²=0.6940
+SGD (adaptive):  Train R²=0.7421 | Test R²=0.7102
+```
+
+<Note>
+The adaptive learning rate performs slightly better, automatically adjusting the step size during optimization.
+</Note>
+
+**Files saved:**
+- `results/SGD_constant.joblib`
+- `results/SGD_adaptive.joblib`
+- `results/scaler.joblib` (important for prediction!)
+
+### 6. Decision Tree Regression
+
+```python
+dt_reg = DecisionTreeRegressor(max_depth=5, random_state=42)
+dt_reg.fit(X_train, y_train)
+```
+
+**Performance:**
+```
+Train R²: 0.9277 | Test R²: 0.8495
+Train RMSE: 2.5206 | Test RMSE: 3.3487
+CV R² (mean±std): 0.7239 ± 0.1427
+✅ Good fit
+```
+
+**Files saved:**
+- `results/decision_tree.joblib`
+- `results/pred_decision_tree.npy`
+
+### 7. Neural Network (MLP Regressor)
+
+```python
+nn_reg = MLPRegressor(
+    hidden_layer_sizes=(100, 50),  # 2 hidden layers
+    max_iter=1000,
+    random_state=42,
+    early_stopping=True
+)
+nn_reg.fit(X_train_scaled, y_train)
+```
+
+**Performance:**
+```
+Train R²: 0.8456 | Test R²: 0.8058
+Train RMSE: 3.6842 | Test RMSE: 3.8044
+CV R² (mean±std): 0.7853 ± 0.1093
+✅ Good fit
+```
+
+**Files saved:**
+- `results/neural_network.joblib`
+- `results/pred_neural_network.npy`
+
+## Results Directory Structure
+
+After training completes, your `results/` directory contains:
+
+```bash
+results/
+├── X_train.csv, X_test.csv          # Split datasets
+├── y_train.csv, y_test.csv
+├── linear_univariate.joblib         # Saved models
+├── linear_multivariate.joblib
+├── linear_feature_selection.joblib
+├── polynomial_degree2.joblib
+├── polynomial_degree3.joblib
+├── polynomial_transformer_degree2.joblib
+├── polynomial_transformer_degree3.joblib
+├── SGD_constant.joblib
+├── SGD_adaptive.joblib
+├── decision_tree.joblib
+├── neural_network.joblib
+├── scaler.joblib                    # Feature scaler
+├── pred_*.npy                       # Predictions (one per model)
+├── metrics_*.json                   # Metrics (one per model)
+├── cv_results.json                  # Cross-validation results
+└── model_comparison.csv             # Final comparison table
+```
+
+<Note>
+**File formats:**
+- `.joblib`: Serialized scikit-learn models (use `joblib.load()` to restore)
+- `.npy`: NumPy arrays with predictions (use `np.load()`)
+- `.json`: Metrics in JSON format
+- `.csv`: Data tables
+</Note>
+
+## Understanding the Output Metrics
+
+Each model is evaluated with multiple metrics:
+
+<AccordionGroup>
+  <Accordion title="R² (R-squared) Score">
+    Measures how well the model explains variance in the target variable.
+    
+    - **Range:** -∞ to 1.0 (higher is better)
+    - **1.0** = Perfect predictions
+    - **0.0** = Model performs like predicting the mean
+    - **Negative** = Model performs worse than baseline
+    
+    **Good values:** > 0.7 for this dataset
+  </Accordion>
+
+  <Accordion title="RMSE (Root Mean Squared Error)">
+    Average prediction error in the same units as the target (thousands of dollars).
+    
+    - **Lower is better**
+    - RMSE of 4.65 means predictions are off by ~$4,650 on average
+    - More sensitive to large errors than MAE
+  </Accordion>
+
+  <Accordion title="Cross-Validation (CV) Score">
+    Average performance across 5 different train/test splits.
+    
+    - **More reliable** than single test set score
+    - **Standard deviation** shows model stability
+    - High std (>0.15) indicates inconsistent performance
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+After training all models:
+
+<CardGroup cols={2}>
+  <Card title="Compare Models" icon="ranking-star" href="/workflows/model-comparison">
+    Run the comparison script to identify the best model
+  </Card>
+  <Card title="Make Predictions" icon="wand-magic-sparkles" href="/api-reference/predict">
+    Use trained models for new predictions
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="ConvergenceWarning from SGD or Neural Network">
+    This means the model didn't fully converge. Solutions:
+    
+    1. Increase `max_iter` parameter (e.g., from 1000 to 5000)
+    2. Adjust learning rate (`eta0`)
+    3. Ensure features are properly scaled
+    
+    The models still work but may not be optimal.
+  </Accordion>
+
+  <Accordion title="High train/test R² gap (overfitting)">
+    If train R² >> test R², the model is overfitting:
+    
+    - **For Decision Trees:** Reduce `max_depth` or increase `min_samples_split`
+    - **For Neural Networks:** Add dropout or reduce layer sizes
+    - **For Polynomial:** Use lower degree
+  </Accordion>
+
+  <Accordion title="Results directory not created">
+    Ensure you have write permissions:
+    
+    ```bash
+    mkdir -p ../results
+    chmod 755 ../results
+    ```
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,201 @@
+---
+title: 'Data Analysis Workflow'
+description: 'Learn how to explore and analyze the Boston Housing dataset using the analyze notebook'
+icon: 'chart-line'
+---
+
+# Data Analysis Workflow
+
+This guide walks you through the exploratory data analysis workflow using `analyze.ipynb`. You'll learn how to uncover insights, identify feature correlations, and understand the dataset characteristics.
+
+## Prerequisites
+
+Before starting, ensure you have:
+- Jupyter Notebook or JupyterLab installed
+- Required Python packages (pandas, numpy, kagglehub)
+- Internet connection to download the dataset
+
+## Launching the Analysis Notebook
+
+<Steps>
+  <Step title="Navigate to the notebooks directory">
+    ```bash
+    cd notebooks
+    ```
+  </Step>
+
+  <Step title="Launch Jupyter Notebook">
+    ```bash
+    jupyter notebook analyze.ipynb
+    ```
+    Or if using JupyterLab:
+    ```bash
+    jupyter lab analyze.ipynb
+    ```
+  </Step>
+
+  <Step title="Run all cells sequentially">
+    Click **Cell > Run All** or execute each cell individually with `Shift + Enter`
+  </Step>
+</Steps>
+
+## What You'll Discover
+
+### 1. Dataset Overview
+
+The notebook first downloads and loads the Boston Housing dataset:
+
+```python
+import kagglehub
+import pandas as pd
+import numpy as np
+
+# Download latest version
+path = kagglehub.dataset_download("arunjangir245/boston-housing-dataset")
+df = pd.read_csv(path + '/BostonHousing.csv')
+```
+
+**Expected Output:**
+- Dataset shape: **506 rows × 14 columns**
+- Features include: crim, zn, indus, chas, nox, rm, age, dis, rad, tax, ptratio, b, lstat
+- Target variable: **medv** (median home value)
+
+### 2. Data Quality Assessment
+
+<Accordion title="Missing Values Analysis">
+  The notebook identifies missing data:
+  
+  ```
+  Missing Values:
+      Missing Count  Missing %
+  rm              5   0.988142
+  
+  Total missing values: 5
+  ```
+  
+  Only the `rm` (average number of rooms) feature has **5 missing values (0.99%)** - a minimal amount that can be easily handled during preprocessing.
+</Accordion>
+
+### 3. Feature Correlation Analysis
+
+The most critical insight comes from correlation analysis with the target variable (`medv`):
+
+<CodeGroup>
+```python Strong Positive Correlations
+# Top features positively correlated with house prices
+rm         0.6962  # Average number of rooms
+zn         0.3604  # Proportion of large residential lots  
+b          0.3335  # Demographic factor
+dis        0.2499  # Distance to employment centers
+```
+
+```python Strong Negative Correlations
+# Features negatively correlated with house prices
+lstat     -0.7377  # % Lower status population (STRONGEST)
+ptratio   -0.5078  # Student-teacher ratio
+indus     -0.4837  # Industrial area proportion
+tax       -0.4685  # Property tax rate
+nox       -0.4273  # Air pollution (NOx concentration)
+crim      -0.3883  # Crime rate
+```
+</CodeGroup>
+
+<Note>
+**Key Finding:** The strongest predictor is `lstat` (correlation: -0.74), indicating that neighborhoods with higher percentages of lower-status population have significantly lower home values. The second strongest is `rm` (correlation: 0.70), showing that larger homes command higher prices.
+</Note>
+
+### 4. Statistical Summary
+
+The notebook provides comprehensive statistics for each feature:
+
+```python
+# Example for target variable (medv)
+count    506.000000
+mean      22.532806   # Average home value: $22.5k
+std        9.197104
+min        5.000000
+max       50.000000
+```
+
+### 5. Feature Interpretation Guide
+
+The notebook includes a detailed markdown section explaining what drives housing prices:
+
+<Accordion title="Big Picture Drivers of Housing Prices">
+  Housing values in this dataset reflect five macro factors:
+
+  1. **Size & Space** — `rm` (rooms), `zn` (zoning for large lots)
+  2. **Socioeconomic Status** — `lstat` (lower status %), `b` (demographics)
+  3. **Education Quality** — `ptratio` (student-teacher ratio)
+  4. **Environmental Quality** — `nox` (pollution), `indus` (industrial %)
+  5. **Safety & Costs** — `crim` (crime rate), `tax` (property tax)
+
+  **Core Insight:**
+  ```
+  Housing Price ≈ Space + Income Level + School Quality + 
+                  Environmental Quality + Safety − Cost Burden
+  ```
+</Accordion>
+
+### 6. Outlier Detection
+
+The IQR (Interquartile Range) method identifies outliers:
+
+```
+Columns with outliers:
+  crim: 66 outliers (13.04%)
+  zn: 68 outliers (13.44%)
+  rm: 30 outliers (5.93%)
+  b: 77 outliers (15.22%)
+  medv: 40 outliers (7.91%)
+```
+
+## How to Identify Important Features
+
+After running the analysis, use these correlation insights to:
+
+1. **Select features for modeling** - Focus on features with |correlation| > 0.5:
+   - `lstat`, `rm`, `ptratio`, `indus`, `tax`, `nox`
+
+2. **Understand feature relationships** - Note that some features are highly correlated with each other:
+   - `rad` and `tax` have correlation of 0.91 (multicollinearity alert!)
+   - `nox` and `dis` have correlation of -0.77
+
+3. **Prioritize feature engineering** - Consider:
+   - Polynomial features for `rm` (strong linear relationship)
+   - Interaction terms between `lstat` and `rm`
+   - Log transformations for skewed features like `crim`
+
+## Next Steps
+
+After completing the data analysis:
+
+<CardGroup cols={2}>
+  <Card title="Train Models" icon="brain" href="/workflows/model-training">
+    Use the insights to build predictive models
+  </Card>
+  <Card title="Compare Results" icon="ranking-star" href="/workflows/model-comparison">
+    Evaluate which model performs best
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="KaggleHub authentication error">
+    If you encounter authentication errors:
+    
+    1. Create a Kaggle account at kaggle.com
+    2. Go to Account Settings > API > Create New Token
+    3. Place the downloaded `kaggle.json` in `~/.kaggle/`
+    4. Run: `chmod 600 ~/.kaggle/kaggle.json`
+  </Accordion>
+
+  <Accordion title="Dataset not found locally">
+    The first time you run the notebook, it downloads the dataset from Kaggle. This requires:
+    - Active internet connection
+    - Valid Kaggle API credentials
+    
+    The dataset is cached locally for future runs.
+  </Accordion>
+</AccordionGroup>

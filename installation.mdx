@@ -1,0 +1,610 @@
+---
+title: Installation
+description: Complete installation guide for the House Price Prediction project
+---
+
+This guide covers everything you need to set up the House Price Prediction project on your local machine, including dependency installation, Jupyter setup, and troubleshooting.
+
+## System Requirements
+
+### Python Version
+
+<Note>
+**Python 3.12 or higher is required**. This project uses modern Python features and type hints that require at least Python 3.12.
+</Note>
+
+Check your Python version:
+
+```bash
+python --version
+```
+
+Expected output: `Python 3.12.x` or higher
+
+### Operating System
+
+The project works on:
+- **Linux** (Ubuntu, Debian, Fedora, etc.)
+- **macOS** (10.15 Catalina or later)
+- **Windows** (Windows 10/11 with WSL recommended)
+
+### Disk Space
+
+- **Minimum**: 500 MB (dependencies + dataset)
+- **Recommended**: 1 GB (includes cache and results)
+
+## Installation Methods
+
+### Method 1: UV (Recommended)
+
+UV is a fast, modern Python package installer that's significantly faster than pip.
+
+<Steps>
+  <Step title="Install UV">
+    If you don't have UV installed:
+
+    ```bash
+    # Linux/macOS
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Windows (PowerShell)
+    powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+
+    Verify installation:
+
+    ```bash
+    uv --version
+    ```
+  </Step>
+
+  <Step title="Sync dependencies">
+    Navigate to the project directory and sync all dependencies:
+
+    ```bash
+    cd ~/workspace/source
+    uv sync
+    ```
+
+    <Tip>
+    `uv sync` automatically:
+    - Creates a virtual environment (`.venv/`)
+    - Installs all dependencies from `pyproject.toml`
+    - Locks dependency versions for reproducibility
+    </Tip>
+
+    Expected output:
+
+    ```bash
+    Using Python 3.12.x
+    Creating virtualenv at .venv
+    Resolved 120 packages in 1.2s
+    Installed 120 packages in 4.3s
+    ```
+  </Step>
+
+  <Step title="Activate the environment">
+    ```bash
+    # Linux/macOS
+    source .venv/bin/activate
+
+    # Windows
+    .venv\Scripts\activate
+    ```
+
+    Your prompt should now show `(.venv)` prefix.
+  </Step>
+</Steps>
+
+### Method 2: pip
+
+Traditional installation using pip and virtual environments.
+
+<Steps>
+  <Step title="Create a virtual environment">
+    ```bash
+    cd ~/workspace/source
+    python -m venv .venv
+    ```
+  </Step>
+
+  <Step title="Activate the environment">
+    <CodeGroup>
+      ```bash Linux/macOS
+      source .venv/bin/activate
+      ```
+
+      ```bash Windows (Command Prompt)
+      .venv\Scripts\activate.bat
+      ```
+
+      ```bash Windows (PowerShell)
+      .venv\Scripts\Activate.ps1
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Install dependencies">
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+    This installs all packages listed in `requirements.txt` (120 packages total).
+
+    Expected output:
+
+    ```bash
+    Collecting pandas>=3.0.1
+    Collecting numpy>=2.4.2
+    Collecting scikit-learn>=1.8.0
+    ...
+    Successfully installed pandas-3.0.1 numpy-2.4.2 scikit-learn-1.8.0 ...
+    ```
+  </Step>
+</Steps>
+
+## Core Dependencies
+
+The project requires these key packages:
+
+### Data Processing & Analysis
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **pandas** | ≥3.0.1 | Data manipulation and analysis |
+| **numpy** | ≥2.4.2 | Numerical computing and arrays |
+| **pathlib** | ≥1.0.1 | File path operations |
+
+### Machine Learning
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **scikit-learn** | ≥1.8.0 | ML algorithms (regression, preprocessing) |
+| **joblib** | 1.5.3 | Model serialization and saving |
+
+### Visualization
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **matplotlib** | ≥3.10.8 | Static plots and visualizations |
+| **seaborn** | ≥0.13.2 | Statistical data visualization |
+| **plotly** | ≥6.5.2 | Interactive plots |
+
+### Jupyter Environment
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **jupyter** | ≥1.1.1 | Jupyter notebook interface |
+| **jupyterlab** | 4.5.5 | Modern Jupyter environment |
+| **ipykernel** | ≥7.2.0 | Python kernel for notebooks |
+
+### Data Acquisition
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **kagglehub** | ≥1.0.0 | Automatic Kaggle dataset download |
+
+<Note>
+The dataset (Boston Housing) is automatically downloaded from Kaggle using `kagglehub` on first run. No manual download or API keys required!
+</Note>
+
+## Jupyter Setup
+
+### Starting Jupyter Notebook
+
+<CodeGroup>
+  ```bash Jupyter Notebook (Classic)
+  jupyter notebook
+  ```
+
+  ```bash JupyterLab (Modern Interface)
+  jupyter lab
+  ```
+
+  ```bash Specific Port
+  jupyter notebook --port=8889
+  ```
+
+  ```bash No Browser Launch
+  jupyter notebook --no-browser
+  ```
+</CodeGroup>
+
+Your browser will open automatically to `http://localhost:8888`
+
+### Configuring the Kernel
+
+If Jupyter doesn't recognize your virtual environment:
+
+<Steps>
+  <Step title="Install ipykernel">
+    ```bash
+    pip install ipykernel
+    ```
+  </Step>
+
+  <Step title="Register the kernel">
+    ```bash
+    python -m ipykernel install --user --name=mlproject --display-name="ML House Prediction"
+    ```
+  </Step>
+
+  <Step title="Select the kernel in Jupyter">
+    In your notebook:
+    1. Click **Kernel** → **Change Kernel**
+    2. Select **ML House Prediction**
+  </Step>
+</Steps>
+
+### Jupyter Extensions (Optional)
+
+Enhance your Jupyter experience:
+
+```bash
+# Table of contents
+pip install jupyter_contrib_nbextensions
+jupyter contrib nbextension install --user
+
+# Variable inspector
+jupyter nbextension enable varInspector/main
+```
+
+## Dataset Download
+
+### Automatic Download
+
+The project uses `kagglehub` to automatically download the Boston Housing dataset:
+
+```python
+import kagglehub
+
+# This runs automatically in both notebooks
+path = kagglehub.dataset_download("arunjangir245/boston-housing-dataset")
+print("Path to dataset files:", path)
+```
+
+**First run output:**
+
+```bash
+Downloading dataset...
+Path to dataset files: ~/.cache/kagglehub/datasets/arunjangir245/boston-housing-dataset/versions/2
+```
+
+**Subsequent runs:**
+
+```bash
+Using cached dataset...
+Path to dataset files: ~/.cache/kagglehub/datasets/arunjangir245/boston-housing-dataset/versions/2
+```
+
+<Tip>
+The dataset is cached locally after first download, so you don't need internet connection for subsequent runs.
+</Tip>
+
+### Dataset Details
+
+- **Source**: Kaggle - Boston Housing Dataset
+- **Size**: ~25 KB (BostonHousing.csv)
+- **Samples**: 506 rows
+- **Features**: 13 input features + 1 target variable
+- **Cache Location**: `~/.cache/kagglehub/`
+
+### Manual Download (Optional)
+
+If automatic download fails, you can manually download:
+
+1. Visit: https://www.kaggle.com/datasets/arunjangir245/boston-housing-dataset
+2. Download `BostonHousing.csv`
+3. Update notebook to point to your local file:
+
+```python
+# Replace in notebooks/analyze.ipynb and notebooks/train.ipynb
+df = pd.read_csv('path/to/your/BostonHousing.csv')
+```
+
+## Verifying Installation
+
+Run this verification script to ensure everything is installed correctly:
+
+```python
+import sys
+import importlib.metadata
+
+# Check Python version
+print(f"Python version: {sys.version}")
+assert sys.version_info >= (3, 12), "Python 3.12+ required"
+
+# Check key packages
+packages = {
+    'pandas': '3.0.1',
+    'numpy': '2.4.2',
+    'scikit-learn': '1.8.0',
+    'jupyter': '1.1.1',
+    'kagglehub': '1.0.0',
+    'matplotlib': '3.10.8',
+    'seaborn': '0.13.2'
+}
+
+print("\n✓ Python version check passed")
+print("\nPackage versions:")
+
+for package, min_version in packages.items():
+    try:
+        version = importlib.metadata.version(package)
+        print(f"  {package}: {version}")
+    except importlib.metadata.PackageNotFoundError:
+        print(f"  ❌ {package}: NOT INSTALLED")
+
+print("\n✅ All core dependencies installed!")
+```
+
+Expected output:
+
+```bash
+Python version: 3.12.x
+
+✓ Python version check passed
+
+Package versions:
+  pandas: 3.0.1
+  numpy: 2.4.2
+  scikit-learn: 1.8.0
+  jupyter: 1.1.1
+  kagglehub: 1.0.0
+  matplotlib: 3.10.8
+  seaborn: 0.13.2
+
+✅ All core dependencies installed!
+```
+
+## Troubleshooting
+
+### Python Version Issues
+
+<Accordion title="Python 3.12 not available">
+**Problem**: Your system has an older Python version.
+
+**Solutions**:
+
+1. **Using pyenv** (Linux/macOS):
+   ```bash
+   curl https://pyenv.run | bash
+   pyenv install 3.12.0
+   pyenv global 3.12.0
+   ```
+
+2. **Using apt** (Ubuntu/Debian):
+   ```bash
+   sudo add-apt-repository ppa:deadsnakes/ppa
+   sudo apt update
+   sudo apt install python3.12 python3.12-venv
+   ```
+
+3. **Download from python.org**:
+   Visit https://www.python.org/downloads/ and install Python 3.12+
+</Accordion>
+
+### Dependency Installation Issues
+
+<Accordion title="pip install fails with build errors">
+**Problem**: C++ compilation errors during installation (especially for numpy/scipy)
+
+**Solution 1 - Install build tools**:
+
+```bash
+# Ubuntu/Debian
+sudo apt install build-essential python3-dev
+
+# macOS
+xcode-select --install
+
+# Fedora/RHEL
+sudo dnf install gcc gcc-c++ python3-devel
+```
+
+**Solution 2 - Use pre-built wheels**:
+
+```bash
+pip install --only-binary :all: numpy scikit-learn
+```
+</Accordion>
+
+<Accordion title="SSL certificate verification failed">
+**Problem**: `kagglehub` fails to download dataset due to SSL errors
+
+**Solutions**:
+
+```bash
+# Upgrade certifi package
+pip install --upgrade certifi
+
+# Set environment variable (temporary workaround)
+export SSL_CERT_FILE=$(python -c "import certifi; print(certifi.where())")
+```
+</Accordion>
+
+<Accordion title="Out of memory during installation">
+**Problem**: Installation crashes with memory errors
+
+**Solution**:
+
+```bash
+# Install packages one at a time
+pip install pandas
+pip install numpy
+pip install scikit-learn
+pip install jupyter
+pip install kagglehub matplotlib seaborn plotly
+```
+</Accordion>
+
+### Jupyter Issues
+
+<Accordion title="Jupyter command not found">
+**Problem**: `jupyter` command not available after installation
+
+**Solution**:
+
+```bash
+# Ensure virtual environment is activated
+source .venv/bin/activate
+
+# Verify jupyter is installed
+pip list | grep jupyter
+
+# If not installed
+pip install jupyter
+```
+</Accordion>
+
+<Accordion title="Kernel keeps dying">
+**Problem**: Jupyter kernel crashes during execution
+
+**Causes & Solutions**:
+
+1. **Out of memory**: Close other applications, or reduce dataset size for testing
+2. **Corrupted environment**: Recreate virtual environment
+   ```bash
+   deactivate
+   rm -rf .venv
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+3. **Conflicting packages**: Clear pip cache
+   ```bash
+   pip cache purge
+   pip install --force-reinstall jupyter ipykernel
+   ```
+</Accordion>
+
+<Accordion title="Can't import modules in notebook">
+**Problem**: `ModuleNotFoundError` even after installation
+
+**Solution**:
+
+1. Check that you're using the correct kernel (see [Configuring the Kernel](#configuring-the-kernel))
+2. Restart the Jupyter kernel: **Kernel** → **Restart**
+3. Verify installation in notebook:
+   ```python
+   import sys
+   print(sys.executable)  # Should point to .venv/bin/python
+   ```
+</Accordion>
+
+### Dataset Issues
+
+<Accordion title="Dataset download is very slow">
+**Problem**: `kagglehub` download takes a long time
+
+**Solutions**:
+
+1. Be patient - first download can take 1-2 minutes depending on connection
+2. Check your internet speed: `speedtest-cli`
+3. Use manual download method (see [Manual Download](#manual-download-optional))
+</Accordion>
+
+<Accordion title="Permission denied when caching dataset">
+**Problem**: Can't write to `~/.cache/kagglehub/`
+
+**Solution**:
+
+```bash
+# Fix permissions
+mkdir -p ~/.cache/kagglehub
+chmod 755 ~/.cache/kagglehub
+
+# Or set custom cache directory
+export KAGGLEHUB_CACHE_DIR=/path/to/writable/directory
+```
+</Accordion>
+
+## Platform-Specific Notes
+
+### Windows
+
+<Warning>
+Windows users should use WSL (Windows Subsystem for Linux) for best compatibility. Some packages may have issues with native Windows Python.
+</Warning>
+
+**Using WSL**:
+
+```bash
+# Install WSL
+wsl --install
+
+# Install Python in WSL
+sudo apt update
+sudo apt install python3.12 python3.12-venv python3-pip
+
+# Follow Linux installation instructions
+```
+
+**Native Windows**:
+
+- Use Anaconda for easier dependency management
+- Some visualization libraries may render differently
+- File paths use backslashes: `results\model.joblib`
+
+### macOS
+
+**M1/M2 Apple Silicon**:
+
+Some packages need Rosetta or native ARM builds:
+
+```bash
+# Install Rosetta (if needed)
+softwareupdate --install-rosetta
+
+# Use conda for ARM-native packages (alternative)
+brew install miniforge
+conda create -n mlproject python=3.12
+conda activate mlproject
+conda install pandas numpy scikit-learn jupyter
+```
+
+### Linux
+
+**Ubuntu 20.04 / Debian 10 users**:
+
+Python 3.12 not in default repos - use deadsnakes PPA:
+
+```bash
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.12 python3.12-venv python3.12-dev
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Run your first analysis and train models
+  </Card>
+  
+  <Card title="Project Structure" icon="folder-tree" href="/project-structure">
+    Understand the codebase organization
+  </Card>
+  
+  <Card title="Data Exploration" icon="magnifying-glass-chart" href="/workflows/data-analysis">
+    Learn about the Boston Housing dataset
+  </Card>
+  
+  <Card title="Model Training" icon="brain" href="/workflows/training">
+    Deep dive into model training workflow
+  </Card>
+</CardGroup>
+
+## Getting Help
+
+If you encounter issues not covered here:
+
+1. Check the [GitHub Issues](https://github.com/yourusername/house-price-prediction/issues)
+2. Search existing discussions
+3. Create a new issue with:
+   - Your Python version (`python --version`)
+   - Operating system
+   - Full error message
+   - Steps to reproduce
+
+**Still stuck?** Open an issue with the label `installation` and we'll help you get up and running!

@@ -1,0 +1,387 @@
+---
+title: 'Model Comparison Workflow'
+description: 'Learn how to compare trained models and identify the best performer using compare_models.py'
+icon: 'ranking-star'
+---
+
+# Model Comparison Workflow
+
+After training multiple models, use this workflow to systematically compare their performance and select the best model for deployment.
+
+## Prerequisites
+
+<Note>
+You must complete the [Model Training Workflow](/workflows/model-training) before running model comparison. This creates the required metrics files in the `results/` directory.
+</Note>
+
+## Running the Comparison Script
+
+<Steps>
+  <Step title="Ensure models are trained">
+    Verify that the `results/` directory exists and contains metrics files:
+
+    ```bash
+    ls results/metrics_*.json
+    ```
+
+    You should see at least 9 metrics files from the training workflow.
+  </Step>
+
+  <Step title="Run the comparison script">
+    ```bash
+    python compare_models.py
+    ```
+
+    The script automatically:
+    - Loads all metrics JSON files from `results/`
+    - Compares models by Test R² score
+    - Ranks models from best to worst
+    - Identifies the champion model
+  </Step>
+
+  <Step title="Review the output">
+    The script prints a formatted comparison table to the console (see example below).
+  </Step>
+</Steps>
+
+## Understanding the Output
+
+### Comparison Table
+
+Here's the actual output from running the comparison on trained models:
+
+```
+===============================================================================================
+                                   MODEL COMPARISON OVERVIEW
+===============================================================================================
+                            Model Name  Train R²  Test R²  CV R² Mean  Train RMSE  Test RMSE
+0              Decision Tree Regression    0.9277   0.8495      0.7239      2.5206     3.3487
+1             Neural Network Regression    0.8456   0.8058      0.7853      3.6842     3.8044
+2                        SGD (adaptive)    0.7421   0.7102      0.6901      4.7609     4.6466
+3      Linear Regression (Multivariate)    0.7432   0.7099      0.6880      4.7508     4.6496
+4                        SGD (constant)    0.7347   0.6940      0.6657      4.8291     4.7747
+5  Linear Regression (Feature Selection)   0.6873   0.6511      0.6512      5.2428     5.0990
+6        Polynomial Regression (degree=3)   0.5491   0.5825      0.4908      6.2955     5.5773
+7        Polynomial Regression (degree=2)   0.5362   0.5672      0.4829      6.3851     5.6791
+8        Linear Regression (Univariate)     0.4887   0.4580      0.4524      6.7039     6.3550
+-----------------------------------------------------------------------------------------------
+
+🏆 THE BEST MODEL IS:
+👉 Name:         Decision Tree Regression
+👉 Test R²:      0.8495
+👉 CV R² Mean:   0.7239
+👉 Test RMSE:    3.3487
+===============================================================================================
+```
+
+### How Models Are Ranked
+
+Models are sorted by **Test R²** (descending), because:
+
+1. **Test R²** shows generalization to unseen data (most important)
+2. **Train R²** alone can be misleading due to overfitting
+3. **CV R² Mean** provides additional confidence in model stability
+
+<Note>
+A good model should have:
+- High Test R² (> 0.7 is excellent for this dataset)
+- Small gap between Train R² and Test R² (< 0.1 difference)
+- Consistent CV R² with low standard deviation
+</Note>
+
+## Interpreting the Results
+
+### Top 3 Models Analysis
+
+<AccordionGroup>
+  <Accordion title="🥇 #1: Decision Tree Regression">
+    **Test R²: 0.8495** (Best performer)
+
+    **Strengths:**
+    - Highest test set accuracy (84.95% variance explained)
+    - Can capture non-linear relationships automatically
+    - No feature scaling required
+    - Interpretable feature importance
+
+    **Considerations:**
+    - Train R² of 0.9277 vs Test R² of 0.8495 shows slight overfitting
+    - CV R² of 0.7239 is lower than test R², suggesting some variability
+    - May not extrapolate well beyond training data range
+
+    **Best for:** Production deployment when interpretability and accuracy are both important
+  </Accordion>
+
+  <Accordion title="🥈 #2: Neural Network Regression">
+    **Test R²: 0.8058** (Strong second place)
+
+    **Strengths:**
+    - Excellent CV R² of 0.7853 (highest stability)
+    - Smallest standard deviation in cross-validation (0.1093)
+    - Can learn complex feature interactions
+    - Better generalization than Decision Tree (lower train/test gap)
+
+    **Considerations:**
+    - Requires feature scaling (use saved scaler.joblib)
+    - Less interpretable than linear models
+    - Longer training time
+
+    **Best for:** When model stability and consistent performance matter most
+  </Accordion>
+
+  <Accordion title="🥉 #3: SGD (adaptive) & Linear Regression (Multivariate)">
+    **Test R²: ~0.71** (Tied performance)
+
+    **Strengths:**
+    - Fast training and prediction
+    - Highly interpretable coefficients
+    - Memory efficient
+    - Good baseline performance
+
+    **Considerations:**
+    - Cannot capture non-linear relationships
+    - Lower accuracy than tree-based and neural models
+
+    **Best for:** Quick baselines, feature importance analysis, or when interpretability is critical
+  </Accordion>
+</AccordionGroup>
+
+### Bottom Performers
+
+<Accordion title="Why did some models underperform?">
+  **Univariate Linear Regression (Test R²: 0.458)**
+  - Uses only ONE feature (`rm` - rooms)
+  - Missing critical predictors like `lstat`, `ptratio`
+  - Demonstrates the value of multivariate modeling
+
+  **Polynomial Regression (Test R²: 0.567-0.583)**
+  - Polynomial features of a single variable (`rm`) aren't enough
+  - Would perform better with multivariate polynomial features
+  - Shows that feature engineering alone doesn't replace good feature selection
+</Accordion>
+
+## How to Use the Comparison Results
+
+### 1. Select Your Model Based on Use Case
+
+<CardGroup cols={3}>
+  <Card title="Need Best Accuracy?" icon="bullseye">
+    **Choose:** Decision Tree Regression
+    
+    File: `results/decision_tree.joblib`
+  </Card>
+
+  <Card title="Need Stability?" icon="shield">
+    **Choose:** Neural Network Regression
+    
+    File: `results/neural_network.joblib`
+  </Card>
+
+  <Card title="Need Interpretability?" icon="magnifying-glass">
+    **Choose:** Linear Regression (Multivariate)
+    
+    File: `results/linear_multivariate.joblib`
+  </Card>
+</CardGroup>
+
+### 2. Load the Best Model
+
+<CodeGroup>
+```python Load Decision Tree (Best Overall)
+import joblib
+import numpy as np
+
+# Load the model
+model = joblib.load('results/decision_tree.joblib')
+
+# Load test data
+X_test = pd.read_csv('results/X_test.csv')
+
+# Make predictions
+predictions = model.predict(X_test)
+```
+
+```python Load Neural Network (Most Stable)
+import joblib
+import pandas as pd
+
+# Load model AND scaler (required!)
+model = joblib.load('results/neural_network.joblib')
+scaler = joblib.load('results/scaler.joblib')
+
+# Load test data
+X_test = pd.read_csv('results/X_test.csv')
+
+# Scale features before prediction
+X_test_scaled = scaler.transform(X_test)
+
+# Make predictions
+predictions = model.predict(X_test_scaled)
+```
+
+```python Load Linear Model (Most Interpretable)
+import joblib
+import pandas as pd
+
+model = joblib.load('results/linear_multivariate.joblib')
+X_test = pd.read_csv('results/X_test.csv')
+
+predictions = model.predict(X_test)
+
+# Inspect feature importance
+coefficients = pd.DataFrame({
+    'feature': X_test.columns,
+    'coefficient': model.coef_
+}).sort_values('coefficient', key=abs, ascending=False)
+
+print(coefficients)
+```
+</CodeGroup>
+
+### 3. Validate Model Performance
+
+Verify the model performs as expected on your own test set:
+
+```python
+from sklearn.metrics import r2_score, mean_squared_error
+import numpy as np
+
+# Load true values
+y_test = pd.read_csv('results/y_test.csv')
+
+# Calculate metrics
+r2 = r2_score(y_test, predictions)
+rmse = np.sqrt(mean_squared_error(y_test, predictions))
+
+print(f"R² Score: {r2:.4f}")
+print(f"RMSE: {rmse:.4f}")
+
+# Should match the comparison table values
+```
+
+## Advanced Comparison Techniques
+
+### Custom Ranking by Multiple Criteria
+
+If you want to balance multiple factors:
+
+```python
+import pandas as pd
+
+# Load the comparison table
+df = pd.read_csv('results/model_comparison.csv')
+
+# Create composite score (customize weights)
+df['composite_score'] = (
+    0.5 * df['test_r2'] +           # 50% weight on test accuracy
+    0.3 * df['cv_r2_mean'] +        # 30% weight on CV stability
+    -0.2 * (df['train_r2'] - df['test_r2'])  # Penalize overfitting
+)
+
+df_ranked = df.sort_values('composite_score', ascending=False)
+print(df_ranked[['model_name', 'composite_score']].head())
+```
+
+### Visualize Model Performance
+
+```python
+import matplotlib.pyplot as plt
+import pandas as pd
+
+df = pd.read_csv('results/model_comparison.csv')
+
+# Create comparison plot
+fig, ax = plt.subplots(figsize=(12, 6))
+
+x = range(len(df))
+width = 0.35
+
+ax.bar([i - width/2 for i in x], df['train_r2'], width, label='Train R²')
+ax.bar([i + width/2 for i in x], df['test_r2'], width, label='Test R²')
+
+ax.set_xlabel('Model')
+ax.set_ylabel('R² Score')
+ax.set_title('Model Comparison: Train vs Test Performance')
+ax.set_xticks(x)
+ax.set_xticklabels(df['model_name'], rotation=45, ha='right')
+ax.legend()
+ax.grid(axis='y', alpha=0.3)
+
+plt.tight_layout()
+plt.savefig('results/model_comparison.png')
+plt.show()
+```
+
+## Key Insights from Results
+
+<Note>
+**Winner:** Decision Tree Regression achieves **84.95% accuracy** on test data, outperforming all other models by a significant margin.
+
+**Runner-up:** Neural Network shows the most **consistent performance** across cross-validation folds (CV R² = 0.7853 ± 0.1093).
+
+**Baseline:** Even simple Linear Regression achieves **71% accuracy**, proving the dataset has strong linear patterns.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Deploy the Model" icon="rocket" href="/deployment/overview">
+    Learn how to serve predictions in production
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/predict">
+    Integrate predictions into your application
+  </Card>
+  <Card title="Model Registry" icon="database" href="/guides/model-registry">
+    Version and track your models
+  </Card>
+  <Card title="Monitor Performance" icon="chart-line" href="/guides/monitoring">
+    Set up performance tracking
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No metrics files found">
+    Error: `No metrics JSON files found in the results directory.`
+
+    **Solution:**
+    1. Run the training notebook first: `jupyter notebook train.ipynb`
+    2. Execute all cells to completion
+    3. Verify files exist: `ls results/metrics_*.json`
+  </Accordion>
+
+  <Accordion title="Results directory not found">
+    Error: `Results directory not found. Have you trained the models yet?`
+
+    **Solution:**
+    ```bash
+    # Create the directory
+    mkdir -p results
+    
+    # Re-run training notebook
+    jupyter notebook train.ipynb
+    ```
+  </Accordion>
+
+  <Accordion title="UnicodeDecodeError when displaying output">
+    If you see emoji rendering issues:
+
+    **Solution:**
+    ```python
+    # Add to top of compare_models.py
+    import sys
+    sys.stdout.reconfigure(encoding='utf-8')
+    ```
+
+    Already included in the script!
+  </Accordion>
+
+  <Accordion title="Different results than shown in this guide">
+    Model performance can vary slightly due to:
+    - Different random seeds
+    - Software version differences
+    - Data preprocessing variations
+
+    Expect results within ±0.02 R² of the documented values.
+  </Accordion>
+</AccordionGroup>

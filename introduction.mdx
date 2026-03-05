@@ -1,0 +1,277 @@
+---
+title: Introduction
+description: Learn how to predict house prices using machine learning regression techniques on the Boston Housing dataset
+---
+
+<div className="relative overflow-hidden bg-gradient-to-br from-[#1E40AF] via-[#3B82F6] to-[#60A5FA] dark:from-[#0f1117] dark:via-[#1a1d27] dark:to-[#242838] py-20">
+  <div className="max-w-6xl mx-auto px-6 lg:px-8">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div className="lg:col-span-7">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white dark:text-gray-100 mb-6">
+          House Price Prediction
+        </h1>
+        <p className="text-lg sm:text-xl text-white/90 dark:text-gray-300 max-w-2xl mb-8">
+          Master machine learning regression techniques with this comprehensive project. Train, evaluate, and compare multiple algorithms to predict house prices with real-world data.
+        </p>
+        <div className="flex flex-wrap gap-4">
+          <a
+            href="/quickstart"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white dark:bg-[#1a1d27] text-[#3B82F6] dark:text-[#60A5FA] font-semibold hover:bg-gray-100 dark:hover:bg-[#242838] transition-colors"
+          >
+            Get Started
+          </a>
+          <a
+            href="/models/linear-regression"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-lg border border-white/30 dark:border-[#27272a] bg-white/10 dark:bg-white/5 text-white dark:text-gray-100 font-semibold hover:bg-white/20 dark:hover:bg-white/10 transition-colors"
+          >
+            Explore Models
+          </a>
+        </div>
+      </div>
+      <div className="lg:col-span-5 hidden lg:block">
+        <div className="bg-white/10 dark:bg-[#1a1d27] backdrop-blur-sm rounded-2xl border border-white/20 dark:border-[#27272a] p-6">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/80 dark:text-gray-400">Test R² Score</span>
+              <span className="text-white font-semibold dark:text-gray-100">0.710</span>
+            </div>
+            <div className="w-full bg-white/20 dark:bg-[#0f1117] rounded-full h-2">
+              <div className="bg-white dark:bg-[#60A5FA] h-2 rounded-full" style={{width: '71%'}}></div>
+            </div>
+            <div className="flex items-center justify-between text-sm mt-4">
+              <span className="text-white/80 dark:text-gray-400">Test RMSE</span>
+              <span className="text-white font-semibold dark:text-gray-100">4.650</span>
+            </div>
+            <div className="pt-4 border-t border-white/10 dark:border-[#27272a]">
+              <p className="text-xs text-white/70 dark:text-gray-400">Best Model: Linear Regression (Multivariate)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+    Quick Start
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Get up and running with house price prediction in minutes
+  </p>
+
+  <Steps>
+    <Step title="Install dependencies">
+      Install the required Python packages using UV or pip.
+
+      <CodeGroup>
+      ```bash UV (recommended)
+      uv sync
+      ```
+
+      ```bash pip
+      pip install -r requirements.txt
+      ```
+      </CodeGroup>
+
+      <Note>This project requires Python 3.12 or higher.</Note>
+    </Step>
+
+    <Step title="Run data analysis">
+      Explore the Boston Housing dataset and understand feature correlations.
+
+      ```bash
+      jupyter notebook notebooks/analyze.ipynb
+      ```
+
+      The analysis notebook will show you:
+      - Strong positive correlations (rm: 0.695)
+      - Strong negative correlations (lstat: -0.738)
+      - Feature distributions and outliers
+    </Step>
+
+    <Step title="Train models">
+      Train multiple regression models and compare their performance.
+
+      ```bash
+      jupyter notebook notebooks/train.ipynb
+      ```
+
+      The training notebook implements:
+      - Linear Regression (univariate and multivariate)
+      - Polynomial Regression (degree 2 and 3)
+      - Gradient Descent (SGDRegressor)
+      - Decision Tree and Neural Network models
+    </Step>
+
+    <Step title="Compare results">
+      Evaluate and rank all trained models.
+
+      ```bash
+      python compare_models.py
+      ```
+
+      <Accordion title="Example output">
+      ```
+      ═══════════════════════════════════════════════════════════════════════════════
+                                    MODEL COMPARISON OVERVIEW
+      ═══════════════════════════════════════════════════════════════════════════════
+         Model Name                              Train R²  Test R²  CV R² Mean  Test RMSE
+      0  Linear Regression (Multivariate)        0.7430    0.7100   0.6880      4.6500
+      1  Linear Regression (Feature Selection)   0.6870    0.6510   0.6510      5.0990
+      2  Polynomial Regression (degree=3)        0.5490    0.5830   0.4910      5.5770
+      ```
+      </Accordion>
+    </Step>
+  </Steps>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+    Explore by Topic
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Deep dive into machine learning concepts and model implementations
+  </p>
+
+  <CardGroup cols={2}>
+    <Card
+      title="Dataset Overview"
+      icon="database"
+      href="/concepts/dataset"
+    >
+      Understand the Boston Housing dataset with 506 samples and 13 features
+    </Card>
+    <Card
+      title="Feature Engineering"
+      icon="sliders"
+      href="/concepts/features"
+    >
+      Learn about feature selection and correlation analysis techniques
+    </Card>
+    <Card
+      title="Evaluation Metrics"
+      icon="chart-line"
+      href="/concepts/evaluation-metrics"
+    >
+      Master MSE, RMSE, MAE, R², and cross-validation scoring
+    </Card>
+    <Card
+      title="Model Training"
+      icon="brain"
+      href="/workflows/model-training"
+    >
+      Step-by-step guide to training regression models
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+    Available Models
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Choose from multiple regression algorithms optimized for different scenarios
+  </p>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <a
+      href="/models/linear-regression"
+      className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] hover:border-[#3B82F6] dark:hover:border-[#3B82F6] overflow-hidden no-underline transition-colors"
+    >
+      <div className="p-6 bg-white dark:bg-[#1a1d27]">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          Linear Regression
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Univariate and multivariate regression with feature selection. Best overall performance with R² = 0.710.
+        </p>
+        <div className="flex items-center text-sm text-[#3B82F6] dark:text-[#60A5FA] group-hover:text-[#1E40AF] dark:group-hover:text-[#3B82F6]">
+          Learn more
+          <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+
+    <a
+      href="/models/polynomial-regression"
+      className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] hover:border-[#3B82F6] dark:hover:border-[#3B82F6] overflow-hidden no-underline transition-colors"
+    >
+      <div className="p-6 bg-white dark:bg-[#1a1d27]">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          Polynomial Regression
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Capture non-linear relationships with degree 2 and degree 3 polynomial features.
+        </p>
+        <div className="flex items-center text-sm text-[#3B82F6] dark:text-[#60A5FA] group-hover:text-[#1E40AF] dark:group-hover:text-[#3B82F6]">
+          Learn more
+          <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+
+    <a
+      href="/models/gradient-descent"
+      className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] hover:border-[#3B82F6] dark:hover:border-[#3B82F6] overflow-hidden no-underline transition-colors"
+    >
+      <div className="p-6 bg-white dark:bg-[#1a1d27]">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          Gradient Descent
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          SGDRegressor with constant and adaptive learning rates for iterative optimization.
+        </p>
+        <div className="flex items-center text-sm text-[#3B82F6] dark:text-[#60A5FA] group-hover:text-[#1E40AF] dark:group-hover:text-[#3B82F6]">
+          Learn more
+          <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+
+    <a
+      href="/models/advanced-models"
+      className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] hover:border-[#3B82F6] dark:hover:border-[#3B82F6] overflow-hidden no-underline transition-colors"
+    >
+      <div className="p-6 bg-white dark:bg-[#1a1d27]">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          Advanced Models
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Explore Decision Tree and Neural Network (MLP) regression approaches.
+        </p>
+        <div className="flex items-center text-sm text-[#3B82F6] dark:text-[#60A5FA] group-hover:text-[#1E40AF] dark:group-hover:text-[#3B82F6]">
+          Learn more
+          <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="rounded-2xl bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] dark:from-[#1E40AF] dark:to-[#3B82F6] p-8 lg:p-12">
+    <div className="max-w-3xl">
+      <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+        Ready to start predicting?
+      </h2>
+      <p className="text-lg text-white/90 mb-6">
+        Follow the quickstart guide to train your first model and achieve 0.710 R² score in minutes.
+      </p>
+      <a
+        href="/quickstart"
+        className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white text-[#3B82F6] font-semibold hover:bg-gray-100 transition-colors"
+      >
+        Get Started Now
+      </a>
+    </div>
+  </div>
+</div>
